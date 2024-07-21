@@ -37,24 +37,24 @@ def main():
             packet = tun.read(tun.mtu)
             print(f"Packet: {packet}")
             data = parser.parse_packet(packet, print_data=True)
-            packet = [chr(byte) for byte in packet]
-            # Swap source and destination address.
-            # packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
-            # Change ICMP type code to Echo Reply (0).
-            packet[20] = chr(0)
-            # Clear original ICMP Checksum field.
-            packet[22:24] = chr(0), chr(0)
-            # Calculate new checksum.
-            checksum = 0
-            # for every 16-bit of the ICMP payload:
-            for i in range(20, len(packet), 2):
-                half_word = (ord(packet[i]) << 8) + ord(packet[i + 1])
-                checksum += half_word
-            # Get one's complement of the checksum.
-            checksum = ~(checksum + 4) & 0xffff
-            # Put the new checksum back into the packet.
-            packet[22] = chr(checksum >> 8)
-            packet[23] = chr(checksum & ((1 << 8) - 1))
+            # packet = [chr(byte) for byte in packet]
+            # # Swap source and destination address.
+            # # packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
+            # # Change ICMP type code to Echo Reply (0).
+            # packet[20] = chr(0)
+            # # Clear original ICMP Checksum field.
+            # packet[22:24] = chr(0), chr(0)
+            # # Calculate new checksum.
+            # checksum = 0
+            # # for every 16-bit of the ICMP payload:
+            # for i in range(20, len(packet), 2):
+            #     half_word = (ord(packet[i]) << 8) + ord(packet[i + 1])
+            #     checksum += half_word
+            # # Get one's complement of the checksum.
+            # checksum = ~(checksum + 4) & 0xffff
+            # # Put the new checksum back into the packet.
+            # packet[22] = chr(checksum >> 8)
+            # packet[23] = chr(checksum & ((1 << 8) - 1))
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
