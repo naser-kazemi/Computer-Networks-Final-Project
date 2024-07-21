@@ -19,10 +19,10 @@ def main():
     try:
         while True:
             packet = tun.read(tun.mtu)
-            data = parser.parse_packet(packet)
-            if data:
-                print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
-                print(f"Data: {data['data_payload']}")
+            data = parser.parse_packet(packet, print_data=True)
+            # if data:
+            #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
+            #     print(f"Data: {data['data_payload']}")
             tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
