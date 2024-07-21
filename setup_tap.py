@@ -3,6 +3,7 @@ from packet_parser import PacketParser
 import os
 import subprocess
 
+
 def create_tun_interface():
     tap = TunTapDevice(flags=IFF_TAP | IFF_NO_PI, name='tap0')
     tap.addr = '172.16.0.0'
@@ -26,6 +27,7 @@ def setup_routing(nic='tap0', domain='neverssl.com'):
     # Add route to the custom table
     os.system(f'ip route add {IP_ADDRESS} dev {nic}')
     print(f"Route added to table for {IP_ADDRESS}")
+
 
 def main():
     tap = create_tun_interface()
@@ -52,8 +54,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 
 #
 #
@@ -179,4 +179,3 @@ if __name__ == '__main__':
 #
 # if __name__ == '__main__':
 #     main()
-

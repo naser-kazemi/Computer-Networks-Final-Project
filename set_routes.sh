@@ -1,27 +1,27 @@
-#!/bin/bash
+#! /bin/bash
 
-# Domain to be resolved
-DOMAIN="neverssl.com"
+IPTABLES=/sbin/iptables
 
-# Network through which traffic should be routed
-TARGET_NETWORK="172.16.0.0/24"
-NIC="tun0"
+WANIF='enp0s5'
+LANIF='tun0'
 
-# Resolve the domain name to an IP address
-IP_ADDRESS=$(dig +short $DOMAIN | tail -n1)
+# enable ip forwarding in the kernel
+echo 'Enabling Kernel IP forwarding...'
+/bin/echo 1 > /proc/sys/net/ipv4/ip_forward
 
-if [ -z "$IP_ADDRESS" ]; then
-    echo "Failed to resolve domain: $DOMAIN"
-    exit 1
-fi
+# flush rules and delete chains
+echo 'Flushing rules and deleting existing chains...'
+$IPTABLES -F
+$IPTABLES -X
 
-echo "Resolved IP for $DOMAIN is $IP_ADDRESS"
+# enable masquerading to allow LAN internet access
+echo 'Enabling IP Masquerading and other rules...'
+$IPTABLES -t nat -A POSTROUTING -o $LANIF -j MASQUERADE
+$IPTABLES -A FORWARD -i $LANIF -o $WANIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+$IPTABLES -A FORWARD -i $WANIF -o $LANIF -j ACCEPT
 
-# Add route to the custom table
-sudo ip route add $IP_ADDRESS dev tun0
+$IPTABLES -t nat -A POSTROUTING -o $WANIF -j MASQUERADE
+$IPTABLES -A FORWARD -i $WANIF -o $LANIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+$IPTABLES -A FORWARD -i $LANIF -o $WANIF -j ACCEPT
 
-# Apply the iptables rule to mark the packets
-#sudo iptables -t nat -A POSTROUTING -s $TARGET_NETWORK ! -d $TARGET_NETWORK -j MASQUERADE
-sudo iptables -t nat -A POSTROUTING -o $NIC -j MASQUERADE
-
-echo "Routing set for $DOMAIN to go through $TARGET_NETWORK"
+echo 'Done.'
