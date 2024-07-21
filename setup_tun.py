@@ -37,7 +37,8 @@ def main():
             packet = tun.read(tun.mtu)
             print(f"Packet: {packet}")
             data = parser.parse_packet(packet, print_data=True)
-            # packet = [chr(byte) for byte in packet]
+            str_packet = [chr(byte) for byte in packet]
+            print(f"String Packet: {str_packet}")
             # # Swap source and destination address.
             # # packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
             # # Change ICMP type code to Echo Reply (0).
