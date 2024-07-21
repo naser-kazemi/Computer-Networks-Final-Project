@@ -51,7 +51,7 @@ def main():
             # else:
             #     tun.write(packet)
             # Send the packet to the destination ip
-            udp_socket.sendto(packet, (data['destination_ip']))
+            udp_socket.sendto(packet, (data['destination_ip'], 80))
             # get the response from the destination ip
             response, addr = udp_socket.recvfrom(2048)
             print(f"Response: {response}")
