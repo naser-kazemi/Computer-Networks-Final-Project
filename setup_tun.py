@@ -13,7 +13,7 @@ def create_tun_interface():
     # Add route to the custom table
     os.system(f'sudo ip route add {tun.addr} dev {tun.name}')
     # Apply the iptables rule to mark the packets
-    os.system(f'sudo iptables -t nat -A PREROUTING -o {tun.name} -j MASQUERADE')
+    os.system(f'sudo iptables -t nat -A POSTROUTING -o {tun.name} -j MASQUERADE')
 
     print(f'TUN device {tun.name} created with IP {tun.addr}')
 
