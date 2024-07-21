@@ -106,7 +106,7 @@ def create_tun_interface(dev_name='tun0', addr='172.16.0.0', netmask='255.255.25
     IFF_TUN = 0x0001
     IFF_NO_PI = 0x1000
     # Open the TUN/TAP interface file
-    tun = os.open('/dev/net/tun', 'r+b')
+    tun = open('/dev/net/tun', 'r+b')
 
     # Prepare the struct for ioctl call to create a TUN device
     ifr = struct.pack('16sH', dev_name.encode(), IFF_TUN | IFF_NO_PI)
