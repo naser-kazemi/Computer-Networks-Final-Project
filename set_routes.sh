@@ -17,7 +17,7 @@ fi
 echo "Resolved IP for $DOMAIN is $IP_ADDRESS"
 
 # Add route to the custom table
-sudo ip route add $TARGET_NETWORK dev tun0
+sudo ip route add $IP_ADDRESS dev tun0
 
 # Apply the iptables rule to mark the packets
 sudo iptables -t nat -A POSTROUTING -s $TARGET_NETWORK ! -d $TARGET_NETWORK -j MASQUERADE
