@@ -2,6 +2,7 @@ from pytun import TunTapDevice, IFF_TAP, IFF_NO_PI
 from packet_parser import PacketParser
 import os
 import subprocess
+import socket
 
 
 def create_tun_interface():
@@ -13,8 +14,8 @@ def create_tun_interface():
 
     # Add route to the custom table
     os.system(f'sudo iptables -t nat -A POSTROUTING -o {tap.name} -j MASQUERADE')
-    # os.system(f'sudo iptables -A FORWARD -i {tap.name} -s {tap.addr}/24 -j ACCEPT')
-    # os.system(f'sudo iptables -A FORWARD -o {tap.name} -d {tap.addr}/24 -j ACCEPT')
+    os.system(f'sudo iptables -A FORWARD -i {tap.name} -s {tap.addr}/24 -j ACCEPT')
+    os.system(f'sudo iptables -A FORWARD -o {tap.name} -d {tap.addr}/24 -j ACCEPT')
 
     print(f'TAP device {tap.name} created with IP {tap.addr}')
     return tap
@@ -29,22 +30,31 @@ def setup_routing(nic='tap0', domain='neverssl.com'):
     print(f"Route added to table for {IP_ADDRESS}")
 
 
+def create_udp_socket():
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return udp_socket
+
+
 def main():
     tap = create_tun_interface()
     setup_routing(nic=tap.name, domain='neverssl.com')
     parser = PacketParser()
+    udp_socket = create_udp_socket()
     try:
         while True:
             packet = tap.read(tap.mtu)
             data = parser.parse_packet(packet, print_data=False)
-            # if data:
-            #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
-            #     print(f"Data: {data['data_payload']}")
             if data['data_payload']:
                 print(f"Data: {data['data_payload'].decode('utf-8')}")
                 tap.write(data['data_payload'])
             else:
                 tap.write(packet)
+            # Send the packet to the destination ip
+            udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
+            # get the response from the destination ip
+            response, addr = udp_socket.recvfrom(2048)
+            print(f"Response: {response}")
+            tap.write(response)
     except KeyboardInterrupt:
         print('Shutting down TAP device')
     finally:
