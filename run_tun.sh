@@ -9,5 +9,7 @@ SCRIPT_PATH="setup_tun.py"
 # Execute the Python script
 sudo $PYTHON_EXECUTABLE $SCRIPT_PATH &
 
+sleep 3
+
 # Add route to the custom table
 sudo ./set_routes.sh
