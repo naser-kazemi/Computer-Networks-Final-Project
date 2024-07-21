@@ -41,13 +41,12 @@ def main():
     try:
         while True:
             packet = tun.read(tun.mtu)
-            ip_data = parser.parse_packet(packet, print_data=False)
-            payload = ip_data['data_payload']
-            if payload:
-                tcp_data = parser.parse_packet(payload, print_data=True)
-                dest_ip, dest_port = tcp_data['destination_ip'], tcp_data['destination_port']
+            data = parser.parse_packet(packet, print_data=False)
+            dest_ip, dest_port = data['destination_ip'], data['destination_port']
+            payload = data['data_payload']
+            if dest_ip and dest_port:
                 # send the packet to the destination ip and port
-                udp_socket.sendto(payload, (dest_ip, dest_port))
+                udp_socket.sendto(bytes(payload), (dest_ip, dest_port))
                 # get the response from the destination ip
                 response, addr = udp_socket.recvfrom(2048)
                 print(f"Response: {response}")
