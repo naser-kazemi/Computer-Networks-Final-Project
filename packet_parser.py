@@ -95,6 +95,11 @@ class PacketParser:
         print("\n")
 
 
+    def parse_tcp_payload(self, payload):
+        """Parses TCP payload and returns the data."""
+        return payload.decode('utf-8')
+
+
 # Example usage within module
 if __name__ == "__main__":
     from scapy.all import sniff

@@ -39,6 +39,7 @@ def main():
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
             if data['data_payload']:
+                print(f"Data: {data['data_payload'].decode('utf-8')}")
                 tun.write(data['data_payload'])
             else:
                 tun.write(packet)
