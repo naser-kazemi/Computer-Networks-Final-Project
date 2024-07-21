@@ -2,6 +2,8 @@ from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
 from packet_parser import PacketParser
 import os
 import subprocess
+import socket
+
 
 def create_tun_interface():
     tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
@@ -27,10 +29,15 @@ def setup_routing(nic='tun0', domain='neverssl.com'):
     os.system(f'ip route add {IP_ADDRESS} dev {nic}')
     print(f"Route added to table for {IP_ADDRESS}")
 
+def create_udp_socket():
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return udp_socket
+
 def main():
     tun = create_tun_interface()
     setup_routing(nic=tun.name, domain='neverssl.com')
     parser = PacketParser()
+    udp_socket = create_udp_socket()
     try:
         while True:
             packet = tun.read(tun.mtu)
@@ -38,11 +45,17 @@ def main():
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
-            if data['data_payload']:
-                print(f"Data: {data['data_payload'].decode('utf-8')}")
-                tun.write(data['data_payload'])
-            else:
-                tun.write(packet)
+            # if data['data_payload']:
+            #     print(f"Data: {data['data_payload'].decode('utf-8')}")
+            #     tun.write(data['data_payload'])
+            # else:
+            #     tun.write(packet)
+            # Send the packet to the destination ip
+            udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
+            # get the response from the destination ip
+            response, addr = udp_socket.recvfrom(2048)
+            print(f"Response: {response}")
+            tun.write(response)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
