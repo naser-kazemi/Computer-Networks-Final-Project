@@ -35,21 +35,21 @@ class PacketParser:
         # Check if this is TCP or UDP packet and extract further information
         if ip_packet.haslayer(TCP):
             print("TCP packet")
-            tcp_packet = ip_packet[TCP]
-            source_port = tcp_packet.sport
-            destination_port = tcp_packet.dport
-            sequence_number = tcp_packet.seq
-            acknowledgment_number = tcp_packet.ack
-            tcp_flags = tcp_packet.flags
-            window_size = tcp_packet.window
-            data_payload = bytes(tcp_packet.payload)
+            payload = ip_packet.payload
+            source_port = payload.sport
+            destination_port = payload.dport
+            sequence_number = payload.seq
+            acknowledgment_number = payload.ack
+            tcp_flags = payload.flags
+            window_size = payload.window
+            data_payload = bytes(payload)
 
         elif ip_packet.haslayer(UDP):
             print("UDP packet")
-            udp_packet = ip_packet[UDP]
-            source_port = udp_packet.sport
-            destination_port = udp_packet.dport
-            data_payload = bytes(udp_packet.payload)
+            payload = ip_packet.payload
+            source_port = payload.sport
+            destination_port = payload.dport
+            data_payload = bytes(payload)
 
         # Construct data dictionary
         data = {
