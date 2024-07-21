@@ -51,11 +51,10 @@ def main():
                 # send the packet to the destination ip and port
                 udp_socket.sendto(bytes(payload), (dest_ip, dest_port))
                 # get the response from the destination ip
-                response, addr = udp_socket.recvfrom(2048)
-                print(f"Response: {response}")
-                tun.write(response)
-            else:
-                tun.write(packet)
+                # response, addr = udp_socket.recvfrom(2048)
+                # print(f"Response: {response}")
+                # tun.write(response)
+            tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
