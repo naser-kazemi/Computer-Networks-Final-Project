@@ -129,7 +129,7 @@ def main():
     parser = PacketParser()
     try:
         while True:
-            packet = list(os.read(tun, MSS))
+            packet = list(os.read(tun, 2048))
             # data = parser.parse_packet(packet, print_data=True)
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
