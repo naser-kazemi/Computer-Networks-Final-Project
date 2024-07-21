@@ -7,7 +7,7 @@ PYTHON_EXECUTABLE=$(which python)
 SCRIPT_PATH="setup_tun.py"
 
 # Execute the Python script
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH &
 
 # Add route to the custom table
 sudo ./set_routes.sh
