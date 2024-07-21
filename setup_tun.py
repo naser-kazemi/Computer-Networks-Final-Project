@@ -23,7 +23,7 @@ def main():
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
-            tun.write(packet)
+            # tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
