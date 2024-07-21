@@ -16,13 +16,10 @@ fi
 
 echo "Resolved IP for $DOMAIN is $IP_ADDRESS"
 
-# Create a new routing table if not already existing
-echo "100 custom_routing" >> /etc/iproute2/rt_tables
-
 # Add route to the custom table
 sudo ip route add $TARGET_NETWORK dev tun0
 
 # Apply the iptables rule to mark the packets
-iptables -t nat -A POSTROUTING -s $TARGET_NETWORK ! -d $TARGET_NETWORK -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s $TARGET_NETWORK ! -d $TARGET_NETWORK -j MASQUERADE
 
 echo "Routing set for $DOMAIN to go through $TARGET_NETWORK"
