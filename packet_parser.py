@@ -1,4 +1,4 @@
-from scapy.all import IP, TCP, Raw
+from scapy.all import IP, TCP, UDP
 import datetime
 
 
@@ -9,44 +9,58 @@ class PacketParser:
     def parse_packet(self, packet, print_data=False):
         """Parses individual packets and prints detailed information."""
         ip_packet = IP(packet)
-        # extract every field from the packet: version, header length, total length, payload
+
+        # Extract IP layer fields
         version = ip_packet.version
-        header_length = ip_packet.ihl
+        header_length = ip_packet.ihl * 4  # IP header length is in 32-bit words
         total_length = ip_packet.len
         source_ip = ip_packet.src
         destination_ip = ip_packet.dst
         protocol = ip_packet.proto
         ttl = ip_packet.ttl
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # extract TCP layer from the packet
-        tcp_layer = ip_packet[TCP]
-        source_port = tcp_layer.sport
-        destination_port = tcp_layer.dport
-        sequence_number = tcp_layer.seq
-        acknowledgment_number = tcp_layer.ack
-        data_offset = tcp_layer.dataofs
-        flags = self._parse_tcp_flags(tcp_layer.flags)
+        data_payload = None
 
+        # Check if this is TCP or UDP packet and extract further information
+        if ip_packet.haslayer(TCP):
+            tcp_packet = ip_packet[TCP]
+            source_port = tcp_packet.sport
+            destination_port = tcp_packet.dport
+            sequence_number = tcp_packet.seq
+            acknowledgment_number = tcp_packet.ack
+            tcp_flags = tcp_packet.flags
+            window_size = tcp_packet.window
+            data_payload = bytes(tcp_packet.payload)
+
+        elif ip_packet.haslayer(UDP):
+            udp_packet = ip_packet[UDP]
+            source_port = udp_packet.sport
+            destination_port = udp_packet.dport
+            data_payload = bytes(udp_packet.payload)
+
+        # Construct data dictionary
         data = {
-            "version": version,
-            "header_length": header_length,
-            "total_length": total_length,
-            "source_ip": source_ip,
-            "destination_ip": destination_ip,
-            "protocol": protocol,
-            "ttl": ttl,
-            "timestamp": timestamp,
-            "source_port": source_port,
-            "destination_port": destination_port,
-            "sequence_number": sequence_number,
-            "acknowledgment_number": acknowledgment_number,
-            "data_offset": data_offset,
-            "flags": flags,
-            "payload": str(ip_packet[Raw].load),
+            'timestamp': timestamp,
+            'version': version,
+            'header_length': header_length,
+            'total_length': total_length,
+            'source_ip': source_ip,
+            'destination_ip': destination_ip,
+            'protocol': protocol,
+            'ttl': ttl,
+            'source_port': locals().get('source_port', None),
+            'destination_port': locals().get('destination_port', None),
+            'sequence_number': locals().get('sequence_number', None),
+            'acknowledgment_number': locals().get('acknowledgment_number', None),
+            'tcp_flags': locals().get('tcp_flags', None),
+            'window_size': locals().get('window_size', None),
+            'data_payload': data_payload
         }
 
+        # Print packet details if required
         if print_data:
             self._print_packet_details(data)
+
         return data
 
     def _parse_tcp_flags(self, flags):
