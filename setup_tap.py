@@ -11,9 +11,9 @@ def create_tun_interface():
     tap.up()
 
     # Add route to the custom table
-    os.system(f'sudo iptables -t nat -A POSTROUTING -s {tap.addr}/24 -j MASQUERADE')
-    os.system(f'sudo iptables -A FORWARD -i {tap.name} -s {tap.addr}/24 -j ACCEPT')
-    os.system(f'sudo iptables -A FORWARD -o {tap.name} -d {tap.addr}/24 -j ACCEPT')
+    os.system(f'sudo iptables -t nat -A POSTROUTING -o {tap.name} -j MASQUERADE')
+    # os.system(f'sudo iptables -A FORWARD -i {tap.name} -s {tap.addr}/24 -j ACCEPT')
+    # os.system(f'sudo iptables -A FORWARD -o {tap.name} -d {tap.addr}/24 -j ACCEPT')
 
     print(f'TAP device {tap.name} created with IP {tap.addr}')
     return tap
@@ -34,7 +34,7 @@ def main():
     try:
         while True:
             packet = tap.read(tap.mtu)
-            data = parser.parse_packet(packet, print_data=True)
+            data = parser.parse_packet(packet, print_data=False)
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
