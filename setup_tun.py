@@ -33,6 +33,7 @@ def main():
     parser = PacketParser()
     try:
         while True:
+            print('Reading packet...')
             packet = tun.read(tun.mtu)
             data = parser.parse_packet(packet, print_data=True)
             # if data:
