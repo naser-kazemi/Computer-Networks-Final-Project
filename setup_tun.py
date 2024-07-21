@@ -40,6 +40,8 @@ def main():
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
             tun.write(packet)
+            packet = tun.read(tun.mtu)
+            data = parser.parse_packet(packet, print_data=True)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
