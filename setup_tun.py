@@ -129,7 +129,7 @@ def main():
     parser = PacketParser()
     try:
         while True:
-            packet = list(os.read(tun.fileno(), MSS))
+            packet = list(os.read(tun, MSS))
             # data = parser.parse_packet(packet, print_data=True)
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
@@ -154,7 +154,7 @@ def main():
             packet[23] = chr(checksum & ((1 << 8) - 1))
 
             # Write the reply packet into TUN device.
-            os.write(tun.fileno(), ''.join(packet))
+            os.write(tun, ''.join(packet))
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
