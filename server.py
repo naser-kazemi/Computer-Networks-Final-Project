@@ -22,9 +22,6 @@ def main():
 
     except KeyboardInterrupt:
         print('Shutting down server')
-    finally:
-        tun.down()
-        tun.close()
 
 
 if __name__ == '__main__':
