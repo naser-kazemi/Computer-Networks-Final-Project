@@ -57,6 +57,8 @@ import os
 import fcntl
 import struct
 import subprocess
+from array import array
+
 from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
 from packet_parser import PacketParser
 
@@ -106,7 +108,8 @@ def create_tun_interface(dev_name='tun0', addr='172.16.0.0', netmask='255.255.25
     IFF_TUN = 0x0001
     IFF_NO_PI = 0x1000
     # Open the TUN/TAP interface file, in binary mode
-    tun = os.open('/dev/net/tun', os.O_RDWR)
+    # tun = os.open('/dev/net/tun', os.O_RDWR)
+    tun = open('/dev/net/tun', 'r+b', buffering=0)
 
     # Prepare the struct for ioctl call to create a TUN device
     ifr = struct.pack('16sH', dev_name.encode(), IFF_TUN | IFF_NO_PI)
@@ -129,7 +132,8 @@ def main():
     parser = PacketParser()
     try:
         while True:
-            packet = list(os.read(tun, 2048))
+            # packet = list(os.read(tun, MSS))
+            packet = array('B', os.read(tun.fileno(), 2048))
             # data = parser.parse_packet(packet, print_data=True)
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
@@ -138,27 +142,33 @@ def main():
             # os.write(tun.fileno(), packet)
             packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
             # Change ICMP type code to Echo Reply (0).
-            packet[20] = chr(0)
+            packet[20] = 0
             # Clear original ICMP Checksum field.
-            packet[22:24] = chr(0), chr(0)
+            packet[22] = 0
+            packet[23] = 0
             # Calculate new checksum.
             checksum = 0
             # for every 16-bit of the ICMP payload:
             for i in range(20, len(packet), 2):
-                half_word = (ord(packet[i]) << 8) + ord(packet[i + 1])
+                # half_word = (ord(packet[i]) << 8) + ord(packet[i + 1])
+                half_word = (packet[i] << 8) + (packet[i + 1])
                 checksum += half_word
             # Get one's complement of the checksum.
             checksum = ~(checksum + 4) & 0xffff
             # Put the new checksum back into the packet.
-            packet[22] = chr(checksum >> 8)
-            packet[23] = chr(checksum & ((1 << 8) - 1))
+            # packet[22] = chr(checksum >> 8)
+            # packet[23] = chr(checksum & ((1 << 8) - 1))
+            packet[22] = checksum >> 8
+            packet[23] = checksum & ((1 << 8) - 1)
 
             # Write the reply packet into TUN device.
-            os.write(tun, ''.join(packet))
+            # os.write(tun, ''.join(packet))
+            os.write(tun.fileno(), bytes(packet))
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
-        os.close(tun)
+        # os.close(tun)
+        tun.close()
 
 
 if __name__ == '__main__':
