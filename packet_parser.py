@@ -34,6 +34,7 @@ class PacketParser:
 
         # Check if this is TCP or UDP packet and extract further information
         if ip_packet.haslayer(TCP):
+            print("TCP packet")
             tcp_packet = ip_packet[TCP]
             source_port = tcp_packet.sport
             destination_port = tcp_packet.dport
@@ -44,6 +45,7 @@ class PacketParser:
             data_payload = bytes(tcp_packet.payload)
 
         elif ip_packet.haslayer(UDP):
+            print("UDP packet")
             udp_packet = ip_packet[UDP]
             source_port = udp_packet.sport
             destination_port = udp_packet.dport

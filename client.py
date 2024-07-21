@@ -29,9 +29,11 @@ def setup_routing(nic='tun0', domain='neverssl.com'):
     os.system(f'ip route add {IP_ADDRESS} dev {nic}')
     print(f"Route added to table for {IP_ADDRESS}")
 
+
 def create_udp_socket():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return udp_socket
+
 
 def main():
     tun = create_tun_interface()
@@ -62,8 +64,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 
 #
 #
@@ -189,4 +189,3 @@ if __name__ == '__main__':
 #
 # if __name__ == '__main__':
 #     main()
-
