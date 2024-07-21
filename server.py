@@ -16,8 +16,8 @@ def main():
     try:
         while True:
             packet, addr = udp_socket.recvfrom(2048)
-            data = parser.parse_packet(packet, print_data=True)
-            print(f"Data: {data['data_payload'].decode('utf-8')}")
+            print(f"Received packet from {addr}")
+            print(f"Packet: {packet}")
             # send the packet to the destination ip and port
 
     except KeyboardInterrupt:
