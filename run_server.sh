@@ -4,7 +4,7 @@
 PYTHON_EXECUTABLE=$(which python)
 
 # Path to your Python script that manages the TUN/TAP device
-SCRIPT_PATH="setup_tap.py"
+SCRIPT_PATH="server.py"
 
 # Execute the Python script
 sudo $PYTHON_EXECUTABLE $SCRIPT_PATH
