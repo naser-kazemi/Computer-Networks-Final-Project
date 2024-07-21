@@ -44,7 +44,7 @@ def main():
             else:
                 tap.write(packet)
     except KeyboardInterrupt:
-        print('Shutting down TUN device')
+        print('Shutting down TAP device')
     finally:
         tap.down()
         tap.close()
