@@ -11,17 +11,23 @@ def create_tun_interface():
     tun.up()
 
     # Add route to the custom table
-    os.system(f'sudo ip route add {tun.addr} dev {tun.name}')
-    # Apply the iptables rule to mark the packets
     os.system(f'sudo iptables -t nat -A POSTROUTING -o {tun.name} -j MASQUERADE')
 
     print(f'TUN device {tun.name} created with IP {tun.addr}')
-
     return tun
 
 
+def setup_routing(nic='tun0', domain='neverssl.com'):
+    # get the IP address of the domain
+    IP_ADDRESS = subprocess.check_output(['dig', '+short', domain]).decode('utf-8').strip()
+    print(f"IP address of {domain}: {IP_ADDRESS}")
+    # Add route to the custom table
+    os.system(f'ip route add {IP_ADDRESS} dev {nic}')
+    print(f"Route added to table for {IP_ADDRESS}")
+
 def main():
     tun = create_tun_interface()
+    setup_routing(nic=tun.name, domain='neverssl.com')
     parser = PacketParser()
     try:
         while True:
