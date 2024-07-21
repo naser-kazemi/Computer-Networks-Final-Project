@@ -4,40 +4,13 @@ import os
 import subprocess
 import socket
 
-
-def create_tun_interface():
-    tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
-    tun.addr = '172.16.0.0'
-    tun.netmask = '255.255.255.0'
-    tun.mtu = 1500
-    tun.up()
-
-    # Add route to the custom table
-    os.system(f'sudo iptables -t nat -A POSTROUTING -s {tun.addr}/24 -j MASQUERADE')
-    os.system(f'sudo iptables -A FORWARD -i {tun.name} -s {tun.addr}/24 -j ACCEPT')
-    os.system(f'sudo iptables -A FORWARD -o {tun.name} -d {tun.addr}/24 -j ACCEPT')
-
-    print(f'TUN device {tun.name} created with IP {tun.addr}')
-    return tun
-
-
-def setup_routing(nic='tun0', domain='neverssl.com'):
-    # get the IP address of the domain
-    IP_ADDRESS = subprocess.check_output(['dig', '+short', domain]).decode('utf-8').strip()
-    print(f"IP address of {domain}: {IP_ADDRESS}")
-    # Add route to the custom table
-    os.system(f'ip route add {IP_ADDRESS} dev {nic}')
-    print(f"Route added to table for {IP_ADDRESS}")
-
-
-def create_udp_socket():
-    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return udp_socket
-
+from tun import create_tun_interface, setup_routing_by_domain, create_udp_socket
 
 def main():
+    SERVER_IP = '10.211.55.5'
+    SERVER_PORT = 80
     tun = create_tun_interface()
-    setup_routing(nic=tun.name, domain='neverssl.com')
+    setup_routing_by_domain(nic=tun.name, domain='neverssl.com')
     parser = PacketParser()
     udp_socket = create_udp_socket()
     try:
@@ -49,7 +22,7 @@ def main():
             if data.get('is_tcp'):
                 print(f"Data: {payload}")
                 # send the packet to the destination ip and port
-                udp_socket.sendto(bytes(payload), (dest_ip, dest_port))
+                udp_socket.sendto(bytes(payload), (SERVER_IP, SERVER_PORT))
                 # get the response from the destination ip
                 # response, addr = udp_socket.recvfrom(2048)
                 # print(f"Response: {response}")
