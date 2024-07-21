@@ -112,7 +112,7 @@ def create_tun_interface(dev_name='tun0', addr='172.16.0.0', netmask='255.255.25
     tun = open('/dev/net/tun', 'r+b', buffering=0)
 
     # Prepare the struct for ioctl call to create a TUN device
-    ifr = struct.pack('16sH', dev_name.encode(), IFF_TUN | IFF_NO_PI)
+    ifr = struct.pack('16sH', b'tun0', IFF_TUN | IFF_NO_PI)
     fcntl.ioctl(tun, TUNSETIFF, ifr)
     fcntl.ioctl(tun, TUNSETOWNER, 1000)
 
