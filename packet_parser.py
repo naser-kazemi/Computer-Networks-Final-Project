@@ -54,6 +54,7 @@ class PacketParser:
             data['window_size'] = payload.window
             data['sequence_number'] = payload.seq
             data['acknowledgement_number'] = payload.ack
+            data['is_tcp'] = True
 
         elif ip_packet.haslayer(UDP):
             print("UDP packet")
@@ -61,6 +62,7 @@ class PacketParser:
             data['source_port'] = payload.sport
             data['destination_port'] = payload.dport
             data['data_payload'] = bytes(payload)
+            data['is_udp'] = True
 
         # Print packet details if required
         if print_data:

@@ -44,9 +44,9 @@ def main():
         while True:
             packet = tun.read(tun.mtu)
             data = parser.parse_packet(packet, print_data=False)
-            dest_ip, dest_port = data['destination_ip'], data['destination_port']
-            payload = data['data_payload']
-            if dest_ip and dest_port:
+            dest_ip, dest_port = data.get('destination_ip'), data.get('destination_port')
+            payload = data.get('data_payload')
+            if data.get('is_tcp'):
                 # send the packet to the destination ip and port
                 udp_socket.sendto(bytes(payload), (dest_ip, dest_port))
                 # get the response from the destination ip
