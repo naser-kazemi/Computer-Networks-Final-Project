@@ -1,7 +1,6 @@
 from scapy.all import IP, TCP, UDP
 import datetime
 
-
 # set color codes
 bold = '\033[1m'
 end = '\033[0m'
@@ -12,6 +11,7 @@ green = '\033[92m'
 red = '\033[91m'
 white = '\033[97m'
 magenta = '\033[95m'
+
 
 class PacketParser:
     def __init__(self):
@@ -30,26 +30,6 @@ class PacketParser:
         protocol = ip_packet.proto
         ttl = ip_packet.ttl
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        data_payload = None
-
-        # Check if this is TCP or UDP packet and extract further information
-        if ip_packet.haslayer(TCP):
-            print("TCP packet")
-            payload = ip_packet.payload
-            source_port = payload.sport
-            destination_port = payload.dport
-            sequence_number = payload.seq
-            acknowledgment_number = payload.ack
-            tcp_flags = payload.flags
-            window_size = payload.window
-            data_payload = bytes(payload)
-
-        elif ip_packet.haslayer(UDP):
-            print("UDP packet")
-            payload = ip_packet.payload
-            source_port = payload.sport
-            destination_port = payload.dport
-            data_payload = bytes(payload)
 
         # Construct data dictionary
         data = {
@@ -61,14 +41,26 @@ class PacketParser:
             'destination_ip': destination_ip,
             'protocol': protocol,
             'ttl': ttl,
-            'source_port': locals().get('source_port', None),
-            'destination_port': locals().get('destination_port', None),
-            'sequence_number': locals().get('sequence_number', None),
-            'acknowledgment_number': locals().get('acknowledgment_number', None),
-            'tcp_flags': locals().get('tcp_flags', None),
-            'window_size': locals().get('window_size', None),
-            'data_payload': data_payload
         }
+
+        # Check if this is TCP or UDP packet and extract further information
+        if ip_packet.haslayer(TCP):
+            print("TCP packet")
+            payload = ip_packet.payload
+            data['source_port'] = payload.sport
+            data['destination_port'] = payload.dport
+            data['tcp_flags'] = self._parse_tcp_flags(payload.flags)
+            data['data_payload'] = bytes(payload)
+            data['window_size'] = payload.window
+            data['sequence_number'] = payload.seq
+            data['acknowledgement_number'] = payload.ack
+
+        elif ip_packet.haslayer(UDP):
+            print("UDP packet")
+            payload = ip_packet.payload
+            data['source_port'] = payload.sport
+            data['destination_port'] = payload.dport
+            data['data_payload'] = bytes(payload)
 
         # Print packet details if required
         if print_data:
@@ -95,7 +87,6 @@ class PacketParser:
         for key, value in data.items():
             print(f"{bold}{yellow}{key}{end}: {blue}{value}{end}")
         print("\n")
-
 
     def parse_tcp_payload(self, payload):
         """Parses TCP payload and returns the data."""
