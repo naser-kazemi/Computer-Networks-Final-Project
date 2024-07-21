@@ -35,6 +35,7 @@ def main():
         while True:
             print('Reading packet...')
             packet = tun.read(tun.mtu)
+            print(f"Packet: {packet}")
             data = parser.parse_packet(packet, print_data=True)
             # Swap source and destination address.
             # packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
