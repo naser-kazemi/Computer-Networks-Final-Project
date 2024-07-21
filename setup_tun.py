@@ -38,7 +38,10 @@ def main():
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
-            tun.write(data['data_payload'])
+            if data['data_payload']:
+                tun.write(data['data_payload'])
+            else:
+                tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
@@ -51,16 +54,16 @@ if __name__ == '__main__':
 
 
 
-
-
-import os
-import fcntl
-import struct
-import subprocess
-from array import array
-
-from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
-from packet_parser import PacketParser
+#
+#
+# import os
+# import fcntl
+# import struct
+# import subprocess
+# from array import array
+#
+# from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
+# from packet_parser import PacketParser
 
 
 # def create_tun_interface():
