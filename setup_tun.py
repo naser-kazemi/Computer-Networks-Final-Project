@@ -12,6 +12,7 @@ def create_tun_interface():
 
     return tun
 
+
 def main():
     tun = create_tun_interface()
 
