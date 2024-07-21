@@ -2,6 +2,17 @@ from scapy.all import IP, TCP, UDP
 import datetime
 
 
+# set color codes
+bold = '\033[1m'
+end = '\033[0m'
+yellow = '\033[93m'
+cyan = '\033[96m'
+blue = '\033[94m'
+green = '\033[92m'
+red = '\033[91m'
+white = '\033[97m'
+magenta = '\033[95m'
+
 class PacketParser:
     def __init__(self):
         pass
@@ -80,7 +91,7 @@ class PacketParser:
     def _print_packet_details(self, data):
         """Prints packet details in a structured format."""
         for key, value in data.items():
-            print(f"{key.capitalize()}: {value}")
+            print(f"{bold}{yellow}{key}{end}: {blue}{value}{end}")
         print("\n")
 
 
