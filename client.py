@@ -47,7 +47,7 @@ def main():
             dest_ip, dest_port = data.get('destination_ip'), data.get('destination_port')
             payload = data.get('data_payload')
             if data.get('is_tcp'):
-                print(f"Data: {payload.decode('utf-8')}")
+                print(f"Data: {payload}")
                 # send the packet to the destination ip and port
                 udp_socket.sendto(bytes(payload), (dest_ip, dest_port))
                 # get the response from the destination ip
