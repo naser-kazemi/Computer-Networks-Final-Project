@@ -57,6 +57,8 @@ def main():
             # if data:
             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
             #     print(f"Data: {data['data_payload']}")
+            # convert the packet to strings of bytes
+            packet = [chr(byte) for byte in packet]
             tun.write(''.join(packet))
     except KeyboardInterrupt:
         print('Shutting down TUN device')
