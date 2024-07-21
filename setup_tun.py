@@ -1,5 +1,5 @@
 from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
-
+from packet_parser import PacketParser
 
 def create_tun_interface():
     tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
@@ -15,11 +15,14 @@ def create_tun_interface():
 
 def main():
     tun = create_tun_interface()
-
+    parser = PacketParser()
     try:
         while True:
             packet = tun.read(tun.mtu)
-            print(f'Read a packet from TUN device {tun.name}: {packet}')
+            data = parser.parse_packet(packet)
+            if data:
+                print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
+                print(f"Payload: {data['payload']}")
             tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')

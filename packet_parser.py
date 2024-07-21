@@ -6,7 +6,7 @@ class PacketParser:
     def __init__(self):
         pass
 
-    def parse_packet(self, packet):
+    def parse_packet(self, packet, print_data=False):
         """Parses individual packets and prints detailed information."""
         if packet.haslayer(IP) and packet.haslayer(TCP):
             ip_layer = packet[IP]
@@ -24,7 +24,9 @@ class PacketParser:
                 'data_payload_length': len(tcp_layer.payload),
                 'payload': self._extract_payload(tcp_layer)
             }
-            self._print_packet_details(data)
+            if print_data:
+                self._print_packet_details(data)
+            return data
         else:
             print("Packet does not contain both IP and TCP layers.")
 
