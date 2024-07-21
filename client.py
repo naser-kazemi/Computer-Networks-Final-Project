@@ -41,21 +41,18 @@ def main():
     try:
         while True:
             packet = tun.read(tun.mtu)
-            data = parser.parse_packet(packet, print_data=True)
-            # if data:
-            #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
-            #     print(f"Data: {data['data_payload']}")
-            # if data['data_payload']:
-            #     print(f"Data: {data['data_payload'].decode('utf-8')}")
-            #     tun.write(data['data_payload'])
-            # else:
-            #     tun.write(packet)
-            # Send the packet to the destination ip
-            udp_socket.sendto(packet, (data['destination_ip'], 80))
-            # get the response from the destination ip
-            response, addr = udp_socket.recvfrom(2048)
-            print(f"Response: {response}")
-            tun.write(response)
+            ip_data = parser.parse_packet(packet, print_data=True)
+            if ip_data['data_payload']:
+                tcp_data = parser.parse_tcp_payload(ip_data['data_payload'])
+                dest_ip, dest_port = tcp_data['destination_ip'], tcp_data['destination_port']
+                # send the packet to the destination ip and port
+                udp_socket.sendto(packet, (dest_ip, dest_port))
+                # get the response from the destination ip
+                response, addr = udp_socket.recvfrom(2048)
+                print(f"Response: {response}")
+                tun.write(response)
+            else:
+                tun.write(packet)
     except KeyboardInterrupt:
         print('Shutting down TUN device')
     finally:
