@@ -1,5 +1,7 @@
 from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
 from packet_parser import PacketParser
+import os
+import subprocess
 
 def create_tun_interface():
     tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
@@ -7,6 +9,11 @@ def create_tun_interface():
     tun.netmask = '255.255.255.0'
     tun.mtu = 1500
     tun.up()
+
+    # Add route to the custom table
+    os.system(f'sudo ip route add {tun.addr} dev {tun.name}')
+    # Apply the iptables rule to mark the packets
+    os.system(f'sudo iptables -t nat -A PREROUTING -o {tun.name} -j MASQUERADE')
 
     print(f'TUN device {tun.name} created with IP {tun.addr}')
 
