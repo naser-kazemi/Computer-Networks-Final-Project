@@ -1,4 +1,11 @@
-sudo ip addr flush dev tun0
-sudo ip addr add 172.16.0.2/24 dev tun0
-sudo ip route add ip_address dev nic
-sudo iptables -t nat -A POSTROUTING -s 172.16.0.2/24 ! -d 172.16.0.2/24 -j MASQUERADE
+NIC="tun0"
+SUBNET="172.16.0.2/24"
+
+sudo ip addr flush dev $NIC
+sudo ip addr add $SUBNET dev $NIC
+
+# get the ip address of the neverssl.com server using dig
+IP_ADDRESS=$(dig +short neverssl.com)
+sudo ip route add $IP_ADDRESS dev $NIC
+
+sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
