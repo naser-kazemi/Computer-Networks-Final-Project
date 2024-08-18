@@ -27,7 +27,9 @@ def main():
             # write_to_tun(tun, response)
             print(f"Packet: {packet}")
     except KeyboardInterrupt:
-        print('Shutting down TAP device')
+        print('Shutting down Tun device')
+    finally:
+
 
 
 if __name__ == '__main__':
