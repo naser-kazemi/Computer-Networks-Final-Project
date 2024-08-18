@@ -14,6 +14,8 @@ def create_tun_interface(interface_name='tun0'):
         # Set the IP address of the interface
         # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
 
+        print(f"TUN interface {interface_name} created successfully.")
+
     except subprocess.CalledProcessError as e:
         print(f"Error creating TUN interface: {e}")
 
