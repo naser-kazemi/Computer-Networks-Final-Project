@@ -12,7 +12,7 @@ def create_tun_interface(interface_name='tun0'):
         subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
         # Set the IP address of the interface
-        subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
+        # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
 
     except subprocess.CalledProcessError as e:
         print(f"Error creating TUN interface: {e}")
@@ -44,8 +44,10 @@ def open_tun_interface(tun_name):
 
     return tun
 
+
 def read_from_tun(tun, buffer_size=1500):
     return os.read(tun, buffer_size)
+
 
 def write_to_tun(tun, data):
     os.write(tun, data)
