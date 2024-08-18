@@ -23,8 +23,8 @@ def delete_tun_interface(interface_name):
         # Bring the interface down
         subprocess.run(['sudo', 'ip', 'link', 'set', interface_name, 'down'], check=True)
 
-        # Delete the TUN interface
-        subprocess.run(['sudo', 'ip', 'tun', 'del', 'dev', interface_name, 'mode', 'tun'], check=True)
+        # # Delete the TUN interface
+        # subprocess.run(['sudo', 'ip', 'tun', 'del', 'dev', interface_name, 'mode', 'tun'], check=True)
 
         print(f"TUN interface {interface_name} brought down and deleted successfully.")
     except subprocess.CalledProcessError as e:
