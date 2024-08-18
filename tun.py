@@ -8,8 +8,6 @@ import struct
 
 def create_tun_interface(interface_name='tun0'):
     try:
-        # Create the TUN interface
-        subprocess.run(['sudo', 'ip', 'tuntap', 'add', 'dev', interface_name, 'mode', 'tun'], check=True)
         # Bring the interface up
         subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
