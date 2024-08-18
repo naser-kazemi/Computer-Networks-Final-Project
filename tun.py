@@ -70,14 +70,14 @@ def write_to_tun(tun, data):
     os.write(tun, data)
 
 
-def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
-    # get the IP address of the domain
-    ip_address = subprocess.check_output(['dig', '+short', domain]).decode('utf-8').strip()
-    print(f"IP address of {domain}: {ip_address}")
-    # Add route to the custom table
-    # os.system(f'ip route add {ip_address} dev {nic}')
-    subprocess.run(['sudo', 'ip', 'route', 'add', ip_address, 'dev', nic], check=True)
-    print(f"Route added to table for {ip_address}")
+# def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
+#     # get the IP address of the domain
+#     ip_address = subprocess.check_output(['dig', '+short', domain]).decode('utf-8').strip()
+#     print(f"IP address of {domain}: {ip_address}")
+#     # Add route to the custom table
+#     # os.system(f'ip route add {ip_address} dev {nic}')
+#     subprocess.run(['sudo', 'ip', 'route', 'add', ip_address, 'dev', nic], check=True)
+#     print(f"Route added to table for {ip_address}")
 
 
 # def setup_routing_by_ip(nic='tun0', subnet='172.0.0.0/24'):
