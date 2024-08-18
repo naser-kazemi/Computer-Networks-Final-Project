@@ -67,6 +67,8 @@ def read_from_tun(tun, buffer_size=1500):
 
 
 def write_to_tun(tun, data):
+    print(f"Writing data to TUN interface: {data}")
+    print(f"Data type: {type(data)}")
     os.write(tun, data)
 
 
