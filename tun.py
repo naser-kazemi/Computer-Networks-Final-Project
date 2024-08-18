@@ -62,15 +62,6 @@ def open_tun_interface(tun_name):
     return tun
 
 
-def read_from_tun(tun, buffer_size=1500):
-    return os.read(tun, buffer_size)
-
-
-def write_to_tun(tun, data):
-    print(f"Writing data to TUN interface: {data}")
-    print(f"Data type: {type(data)}")
-    os.write(tun, data)
-
 
 # def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
 #     # get the IP address of the domain
