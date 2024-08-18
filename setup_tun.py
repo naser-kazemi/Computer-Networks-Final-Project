@@ -23,6 +23,7 @@ def main():
                 print(f"Data: {data['data_payload']}")
                 write_to_tun(tun, data['data_payload'])
             else:
+                print("No data payload found. Sending the packet as is.")
                 write_to_tun(tun, packet)
             # Send the packet to the destination ip
             # udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
