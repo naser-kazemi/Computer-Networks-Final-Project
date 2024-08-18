@@ -1,3 +1,5 @@
+import time
+
 from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
 import os
 import subprocess
@@ -6,13 +8,20 @@ import fcntl
 import struct
 
 
-def create_tun_interface(interface_name='tun0'):
+def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
     try:
         # Bring the interface up
         subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
         # Set the IP address of the interface
         # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
+
+        time.sleep(2)
+
+        # iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
+        subprocess.run(
+            ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
+            check=True)
 
         print(f"TUN interface {interface_name} created successfully.")
 
