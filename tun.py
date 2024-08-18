@@ -61,14 +61,18 @@ def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
     print(f"IP address of {domain}: {ip_address}")
     # Add route to the custom table
     # os.system(f'ip route add {ip_address} dev {nic}')
-    subprocess.run(['ip', 'route', 'add', ip_address, 'dev', nic], check=True)
+    subprocess.run(['sudo', 'ip', 'route', 'add', ip_address, 'dev', nic], check=True)
     print(f"Route added to table for {ip_address}")
 
 
-def setup_routing_by_ip(nic='tun0', ip='172.0.0.0'):
+def setup_routing_by_ip(nic='tun0', subnet='172.0.0.0/24'):
     # Add route to the custom table
-    os.system(f'ip route add {ip} dev {nic}')
-    print(f"Route added to table for {ip}")
+    # os.system(f'ip route add {ip} dev {nic}')
+    # sudo ip addr add 172.16.0.2/24 dev tun0
+    subprocess.run(['sudo', 'ip', 'addr', 'add', f'{subnet}', 'dev', nic], check=True)
+    # sudo ip link set up dev jalili
+    subprocess.run(['sudo', 'ip', 'link', 'set', 'up', 'dev', nic], check=True)
+    print(f"Route added to table for {subnet}")
 
 
 def create_udp_socket():
