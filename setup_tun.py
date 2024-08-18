@@ -15,11 +15,12 @@ def main():
         while True:
             packet = read_from_tun(tun, buffer_size=1500)
             data = parser.parse_packet(packet, print_data=False)
-            if data['data_payload']:
-                print(f"Data: {data['data_payload'].decode('utf-8')}")
-                write_to_tun(tun, data['data_payload'])
-            else:
-                write_to_tun(tun, packet)
+            print(f"Data: {data}")
+            # if data['data_payload']:
+            #     print(f"Data: {data['data_payload'].decode('utf-8')}")
+            #     write_to_tun(tun, data['data_payload'])
+            # else:
+            #     write_to_tun(tun, packet)
             # Send the packet to the destination ip
             udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
             # get the response from the destination ip
