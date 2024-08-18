@@ -9,7 +9,7 @@ from tun import create_tun_interface, setup_routing_by_domain, create_udp_socket
 def main():
     SERVER_IP = '10.211.55.5'
     SERVER_PORT = 80
-    tun = create_tun_interface()
+    create_tun_interface()
     setup_routing_by_domain(nic=tun.name, domain='neverssl.com')
     parser = PacketParser()
     udp_socket = create_udp_socket()

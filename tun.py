@@ -2,21 +2,42 @@ from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
 import os
 import subprocess
 import socket
+import fcntl
+import struct
 
-def create_tun_interface():
-    tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
-    tun.addr = '172.16.0.0'
-    tun.netmask = '255.255.255.0'
-    tun.mtu = 1500
-    tun.up()
 
-    # Add route to the custom table
-    os.system(f'sudo iptables -t nat -A POSTROUTING -s {tun.addr}/24 -j MASQUERADE')
-    os.system(f'sudo iptables -A FORWARD -i {tun.name} -s {tun.addr}/24 -j ACCEPT')
-    os.system(f'sudo iptables -A FORWARD -o {tun.name} -d {tun.addr}/24 -j ACCEPT')
+def create_tun_interface(interface_name='tun0'):
+    try:
+        # Create the TUN interface
+        subprocess.run(['sudo', 'ip', 'tuntap', 'add', 'dev', interface_name, 'mode', 'tun'], check=True)
+        # Bring the interface up
+        subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
-    print(f'TUN device {tun.name} created with IP {tun.addr}')
+        # Set the IP address of the interface
+        subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating TUN interface: {e}")
+
+
+TUNSETIFF = 0x400454ca
+IFF_TUN = 0x0001
+IFF_NO_PI = 0x1000
+
+
+def open_tun_interface(tun_name):
+    tun = os.open('/dev/net/tun', os.O_RDWR)
+
+    ifr = struct.pack('16sH', tun_name.encode('utf-8'), IFF_TUN | IFF_NO_PI)
+    fcntl.ioctl(tun, TUNSETIFF, ifr)
+
     return tun
+
+def read_from_tun(tun, buffer_size=1500):
+    return os.read(tun, buffer_size)
+
+def write_to_tun(tun, data):
+    os.write(tun, data)
 
 
 def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
@@ -32,7 +53,6 @@ def setup_routing_by_ip(nic='tun0', ip='172.0.0.0'):
     # Add route to the custom table
     os.system(f'ip route add {ip} dev {nic}')
     print(f"Route added to table for {ip}")
-
 
 
 def create_udp_socket():
