@@ -13,15 +13,17 @@ def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
         # Bring the interface up
         subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
+        subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', interface_name], check=True)
+
         # Set the IP address of the interface
         # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
 
         time.sleep(2)
 
         # iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
-        # subprocess.run(
-        #     ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
-        #     check=True)
+        subprocess.run(
+            ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
+            check=True)
 
         print(f"TUN interface {interface_name} created successfully.")
 
@@ -34,7 +36,6 @@ def delete_tun_interface(interface_name):
     try:
         # Bring the interface down
         subprocess.run(['sudo', 'ip', 'link', 'set', interface_name, 'down'], check=True)
-
         # # Delete the TUN interface
         # subprocess.run(['sudo', 'ip', 'tun', 'del', 'dev', interface_name, 'mode', 'tun'], check=True)
 
@@ -75,14 +76,14 @@ def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
     print(f"Route added to table for {ip_address}")
 
 
-def setup_routing_by_ip(nic='tun0', subnet='172.0.0.0/24'):
-    # Add route to the custom table
-    # os.system(f'ip route add {ip} dev {nic}')
-    # sudo ip addr add 172.16.0.2/24 dev tun0
-    subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', nic], check=True)
-    # sudo ip link set up dev jalili
-    subprocess.run(['sudo', 'ip', 'link', 'set', 'up', 'dev', nic], check=True)
-    print(f"Route added to table for {subnet}")
+# def setup_routing_by_ip(nic='tun0', subnet='172.0.0.0/24'):
+#     # Add route to the custom table
+#     # os.system(f'ip route add {ip} dev {nic}')
+#     # sudo ip addr add 172.16.0.2/24 dev tun0
+#     subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', nic], check=True)
+#     # sudo ip link set up dev jalili
+#     subprocess.run(['sudo', 'ip', 'link', 'set', 'up', 'dev', nic], check=True)
+#     print(f"Route added to table for {subnet}")
 
 
 def create_udp_socket():
