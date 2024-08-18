@@ -5,17 +5,17 @@ import socket
 
 
 def main():
-    tun_name = 'tun0'
-    delete_tun_interface(tun_name)
-    create_tun_interface(tun_name, subnet='172.16.0.2/24')
-    setup_routing_by_ip(nic=tun_name, subnet='172.16.0.2/24')
-    setup_routing_by_domain(nic=tun_name, domain='neverssl.com')
-
-    parser = PacketParser()
-    tun = open_tun_interface(tun_name)
-    print(f"TUN interface {tun_name} is opened.")
-    udp_socket = create_udp_socket()
     try:
+        tun_name = 'tun0'
+        delete_tun_interface(tun_name)
+        create_tun_interface(tun_name, subnet='172.16.0.2/24')
+        setup_routing_by_ip(nic=tun_name, subnet='172.16.0.2/24')
+        setup_routing_by_domain(nic=tun_name, domain='neverssl.com')
+    
+        parser = PacketParser()
+        tun = open_tun_interface(tun_name)
+        print(f"TUN interface {tun_name} is opened.")
+        udp_socket = create_udp_socket()
         while True:
             packet = read_from_tun(tun, buffer_size=1500)
             data = parser.parse_packet(packet, print_data=False)
