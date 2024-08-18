@@ -18,16 +18,16 @@ def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
 
         time.sleep(2)
 
-        # sudo ip addr flush dev tun0
-        subprocess.run(['sudo', 'ip', 'addr', 'flush', 'dev', interface_name], check=True)
-
-        # sudo ip addr add subnet dev interface_name
-        subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', interface_name], check=True)
-
-        # iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
-        subprocess.run(
-            ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
-            check=True)
+        # # sudo ip addr flush dev tun0
+        # subprocess.run(['sudo', 'ip', 'addr', 'flush', 'dev', interface_name], check=True)
+        #
+        # # sudo ip addr add subnet dev interface_name
+        # subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', interface_name], check=True)
+        #
+        # # iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
+        # subprocess.run(
+        #     ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
+        #     check=True)
 
         print(f"TUN interface {interface_name} created successfully.")
 
