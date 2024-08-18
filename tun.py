@@ -26,6 +26,7 @@ def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
         print(f"TUN interface {interface_name} created successfully.")
 
     except subprocess.CalledProcessError as e:
+        delete_tun_interface(interface_name)
         print(f"Error creating TUN interface: {e}")
 
 
