@@ -21,7 +21,7 @@ def main():
             if 'data_payload' in data and data['data_payload']:
                 # print(f"Data: {data['data_payload'].decode('utf-8')}")
                 print(f"Data: {data['data_payload']}")
-                write_to_tun(tun, data['data_payload'].encode('utf-8'))
+                write_to_tun(tun, data['data_payload'])
             else:
                 print("No data payload found. Sending the packet as is.")
                 write_to_tun(tun, packet)
