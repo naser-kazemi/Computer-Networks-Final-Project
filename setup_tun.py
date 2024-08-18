@@ -1,12 +1,15 @@
 from packet_parser import PacketParser
 from tun import create_tun_interface, create_udp_socket, open_tun_interface, read_from_tun, write_to_tun, \
-    delete_tun_interface
+    delete_tun_interface, setup_routing_by_domain
 import socket
 
 
 def main():
     tun_name = 'tun0'
     create_tun_interface(tun_name)
+
+    setup_routing_by_domain(nic=tun_name, domain='neverssl.com')
+    
     parser = PacketParser()
     tun = open_tun_interface(tun_name)
     print(f"TUN interface {tun_name} is opened.")
