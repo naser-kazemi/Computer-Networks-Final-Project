@@ -1,5 +1,6 @@
 from packet_parser import PacketParser
-from tun import create_tun_interface, create_udp_socket, open_tun_interface, read_from_tun, write_to_tun
+from tun import create_tun_interface, create_udp_socket, open_tun_interface, read_from_tun, write_to_tun, \
+    delete_tun_interface
 import socket
 
 
@@ -29,7 +30,7 @@ def main():
     except KeyboardInterrupt:
         print('Shutting down Tun device')
     finally:
-
+        delete_tun_interface(tun_name)
 
 
 if __name__ == '__main__':
