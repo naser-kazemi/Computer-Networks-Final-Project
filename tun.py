@@ -11,32 +11,11 @@ import struct
 def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
     try:
         # Bring the interface up
-        # sudo ip link set dev tun0 up
-        # subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
-        interface = TunTapDevice(name=interface_name, flags=(IFF_TUN | IFF_NO_PI))
-        # print(f"TUN interface {interface_name} brought up successfully.")
+        subprocess.run(['sudo', 'ip', 'link', 'set', 'dev', interface_name, 'up'], check=True)
 
-        # Set the IP address of the interface
-        # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
-        
-        time.sleep(2)
 
-        subprocess.run(['sudo', 'bash', 'run_tun.sh'], check=True)
-
-        # # sudo ip addr flush dev tun0
-        # subprocess.run(['sudo', 'ip', 'addr', 'flush', 'dev', interface_name], check=True)
-        #
-        # # sudo ip addr add subnet dev interface_name
-        # subprocess.run(['sudo', 'ip', 'addr', 'add', subnet, 'dev', interface_name], check=True)
-        #
-        # # iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
-        # subprocess.run(
-        #     ['sudo', 'iptables', '-t', 'nat', '-A', 'POSTROUTING', '-s', subnet, '! -d', subnet, '-j', 'MASQUERADE'],
-        #     check=True)
 
         print(f"TUN interface {interface_name} created successfully.")
-        
-        return interface
 
     except subprocess.CalledProcessError as e:
         delete_tun_interface(interface_name)
