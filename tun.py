@@ -17,6 +17,9 @@ def create_tun_interface(interface_name='tun0', subnet='172.16.0.0/24'):
         # subprocess.run(['sudo', 'ip', 'addr', 'add', '172.16.0.0', 'dev', interface_name], check=True)
 
         time.sleep(2)
+        
+        # execute the run_tun.sh script
+        subprocess.run(['sudo', 'bash', 'run_tun.sh'], check=True)
 
         # # sudo ip addr flush dev tun0
         # subprocess.run(['sudo', 'ip', 'addr', 'flush', 'dev', interface_name], check=True)
