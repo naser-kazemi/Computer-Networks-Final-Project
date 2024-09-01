@@ -4,13 +4,14 @@ from packet_parser import PacketParser
 from tun import create_tun_interface, create_udp_socket, open_tun_interface, \
     delete_tun_interface
 import socket
+import pytun
 
 
 def main():
     tun_name = 'tun0'
     buffer_size = 1500
     try:
-        create_tun_interface(tun_name, subnet='172.16.0.2/24')
+        tun = create_tun_interface(tun_name, subnet='172.16.0.2/24')
         # setup_routing_by_domain(nic=tun_name, domain='neverssl.com')
 
         parser = PacketParser()
@@ -18,7 +19,8 @@ def main():
         print(f"TUN interface {tun_name} is opened.")
         udp_socket = create_udp_socket()
         while True:
-            packet = os.read(tun, buffer_size)
+            # packet = os.read(tun, buffer_size)
+            packet = tun.read(buffer_size)
             data = parser.parse_packet(packet, print_data=False)
             print(f"Data: {data}")
             if 'data_payload' in data and data['data_payload']:
@@ -29,7 +31,8 @@ def main():
                 os.write(tun, packet)
             else:
                 print("No data payload found. Sending the packet as is.")
-                os.write(tun, packet)
+                # os.write(tun, packet)
+                tun.write(packet)
             # Send the packet to the destination ip
             # udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
             # get the response from the destination ip
