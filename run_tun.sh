@@ -25,3 +25,5 @@ source .venv/bin/activate
 python setup_tun.py
 
 sudo ip tuntap del dev tun0 mode tun
+
+echo "Tun device $NIC deleted"
