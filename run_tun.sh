@@ -10,7 +10,7 @@ sudo ip addr flush dev $NIC
 sudo ip addr add $SUBNET dev $NIC
 
 # get the ip address of the neverssl.com server using dig
-IP_ADDRESS=$(d)
+IP_ADDRESS=$(dig +short neverssl.com)
 sudo ip route add $IP_ADDRESS dev $NIC
 
 sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
