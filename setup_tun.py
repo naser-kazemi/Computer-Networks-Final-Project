@@ -13,6 +13,8 @@ def main():
     try:
         tun = create_tun_interface(tun_name, subnet='172.16.0.2/24')
         # setup_routing_by_domain(nic=tun_name, domain='neverssl.com')
+        
+        print(tun)
 
         parser = PacketParser()
         # tun = open_tun_interface(tun_name)
