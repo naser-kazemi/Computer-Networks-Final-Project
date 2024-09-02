@@ -128,5 +128,5 @@ if __name__ == "__main__":
     http_thread.start()
 
     # Run HTTPS server in a separate thread
-    https_thread = threading.Thread(target=run_https_server)
-    https_thread.start()
+    # https_thread = threading.Thread(target=run_https_server)
+    # https_thread.start()
