@@ -21,8 +21,8 @@ def main():
         while True:
             packet = os.read(tun, buffer_size)
             data = parser.parse_packet(packet, print_data=False)
-            print(f"Data: {data}")
-            if 'data_payload' in data and data['data_payload']:
+            # print(f"Data: {data}")
+            if 'data_payload' in data and data['data_payload'] and data['is_tcp']:
                 # print(f"Data: {data['data_payload'].decode('utf-8')}")
                 print(f"Data: {data['data_payload']}")
                 # os.write(tun, data['data_payload'])
