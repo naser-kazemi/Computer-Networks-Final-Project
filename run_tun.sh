@@ -19,7 +19,7 @@ sudo ip route add $IP_ADDRESS dev $NIC
 sleep 1
 
 sudo sysctl -w net.ipv4.ip_forward=1
-# sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
 
 echo "Masquerading all packets from $SUBNET to the internet"
 

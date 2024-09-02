@@ -6,6 +6,9 @@ from tun import create_tun_interface, create_udp_socket, open_tun_interface, \
 import socket
 
 
+SERVER_IP = '34.65.143.49'
+SERVER_PORT = 10
+
 def main():
     tun_name = 'tun0'
     buffer_size = 1500
@@ -28,8 +31,8 @@ def main():
                 # os.write(tun, data['data_payload'])
                 # print(f"Type of packet: {type(packet)}")
                 # os.write(tun, packet)
-                udp_socket.sendto(
-                    packet, (data['destination_ip'], data['destination_port']))
+                # create s udp packet with the packet as the payload, and destination ip and port as the server ip and port
+                udp_socket.sendto(packet, (SERVER_IP, SERVER_PORT))
                 # get the response from the destination ip
                 response, addr = udp_socket.recvfrom(2048)
                 print(f"Response: {response}")
