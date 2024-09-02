@@ -48,6 +48,15 @@ def open_tun_interface(tun_name):
     return tun
 
 
+def open_ens_interface(ens_name):
+    ens = os.open('/dev/net/ens', os.O_RDWR)
+
+    ifr = struct.pack('16sH', ens_name.encode('utf-8'), IFF_TUN | IFF_NO_PI)
+    fcntl.ioctl(ens, TUNSETIFF, ifr)
+
+    return ens
+
+
 
 # def setup_routing_by_domain(nic='tun0', domain='neverssl.com'):
 #     # get the IP address of the domain
