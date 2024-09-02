@@ -26,19 +26,20 @@ def main():
                 # print(f"Data: {data['data_payload'].decode('utf-8')}")
                 print(f"Data: {data['data_payload']}")
                 # os.write(tun, data['data_payload'])
-                print(f"Type of packet: {type(packet)}")
+                # print(f"Type of packet: {type(packet)}")
                 # os.write(tun, packet)
+                udp_socket.sendto(
+                    packet, (data['destination_ip'], data['destination_port']))
+                # get the response from the destination ip
+                response, addr = udp_socket.recvfrom(2048)
+                print(f"Response: {response}")
+                os.write(tun, response)
             else:
                 print("No data payload found. Sending the packet as is.")
                 # os.write(tun, packet)
             # os.write(tun, packet)
             # Send the packet to the destination ip
-            udp_socket.sendto(packet, (data['destination_ip'], data['destination_port']))
-            # get the response from the destination ip
-            response, addr = udp_socket.recvfrom(2048)
-            print(f"Response: {response}")
-            os.write(tun, response)
-            print(f"Packet: {packet}")
+            
     except KeyboardInterrupt:
         print('Shutting down Tun device')
     finally:
