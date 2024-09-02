@@ -9,7 +9,7 @@ from tun import create_udp_socket
 
 def main():
     server_ip = '0.0.0.0'
-    server_port = 80
+    server_port = 8080
     parser = PacketParser()
     udp_socket = create_udp_socket()
     udp_socket.bind((server_ip, server_port))
