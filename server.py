@@ -24,7 +24,7 @@ def main():
         print('Shutting down server')
 
 
-def start_http_server(host='0.0.0.0', port=80):
+def start_http_server(host='0.0.0.0', port=8080):
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
