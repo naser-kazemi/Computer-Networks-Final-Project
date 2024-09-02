@@ -7,7 +7,7 @@ import socket
 
 
 SERVER_IP = '34.65.143.49'
-SERVER_PORT = 10
+SERVER_PORT = 80
 
 def main():
     tun_name = 'tun0'
