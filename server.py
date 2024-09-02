@@ -122,6 +122,38 @@ def run_https_server(port=4430, cert_file='server.pem'):
     httpd.serve_forever()
 
 
+def get_http_request(port=8080):
+    # Create a socket object
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    # Bind the socket to the address and port
+    server_socket.bind(('0.0.0.0', port))
+    
+    server_socket.listen(5)
+    print(f"HTTP server is running on {port}")
+    
+    while True:
+        # Listen for incoming connections
+        
+        # Accept a new connection
+        client_socket, client_address = server_socket.accept()
+        print(f"Connection from {client_address} has been established.")
+
+        # Receive the data (HTTP request) from the client
+        request_data = client_socket.recv(1024).decode('utf-8')
+        print(f"HTTP Request:\n{request_data}")
+
+        # Send a simple HTTP response
+        http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, World!"
+        client_socket.sendall(http_response.encode('utf-8'))
+
+        # Close the connection
+        client_socket.close()
+               
+
+
+
 if __name__ == "__main__":
     # Run HTTP server in a separate thread
     http_thread = threading.Thread(target=run_http_server)
@@ -130,3 +162,7 @@ if __name__ == "__main__":
     # Run HTTPS server in a separate thread
     # https_thread = threading.Thread(target=run_https_server)
     # https_thread.start()
+
+    # Run HTTP server in a separate thread
+    http_thread = threading.Thread(target=get_http_request)
+    http_thread.start()
