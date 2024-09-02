@@ -93,5 +93,5 @@ def start_sniffing(interface):
 
 
 if __name__ == "__main__":
-    network_interface = "eth0"  # Change to your network interface name
+    network_interface = "ens4"  # Change to your network interface name
     start_sniffing(network_interface)
