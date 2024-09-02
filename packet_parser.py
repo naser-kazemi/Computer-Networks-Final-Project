@@ -41,6 +41,8 @@ class PacketParser:
             'destination_ip': destination_ip,
             'protocol': protocol,
             'ttl': ttl,
+            'is_tcp': False,
+            'is_udp': False,
         }
 
         # Check if this is TCP or UDP packet and extract further information
