@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 import tyro
 
@@ -22,6 +23,7 @@ def print_colored(text, color=Color.WHITE):
     print(f"{color.value}{text}{Color.RESET.value}")
 
 
+@dataclass
 class CLIArgs:
     tun_name: str = "tun0"
 
