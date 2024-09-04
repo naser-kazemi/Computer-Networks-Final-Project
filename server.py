@@ -33,27 +33,29 @@ class TunServer:
 
         if packet is not None:
             self.socket.sendto(packet, (self.client_ip, self.port))
-            print_colored(
-                f"Sent packet to {self.client_ip}:{self.port}", Color.GREEN)
+            print_colored(f"Sent packet to {self.client_ip}:{self.port}", Color.GREEN)
         else:
             print_colored("Ignoring the packet", Color.YELLOW)
 
     def start(self):
         self.socket.bind(("0.0.0.0", self.port))
         ip = socket.gethostbyname(socket.gethostname())
-        print_colored(
-            f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
-        
+        print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
+
         while True:
             data, addr = self.socket.recvfrom(2048)
             if data.decode("utf-8") == self.key:
-                print_colored(f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN)
+                print_colored(
+                    f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
+                )
                 print_colored("Key exchange successful", Color.GREEN)
                 self.socket.sendto("OK".encode("utf-8"), addr)
                 self.client_ip = addr[0]
                 break
             else:
-                print_colored(f"Received key from {addr}: {data.decode('utf-8')}", Color.RED)
+                print_colored(
+                    f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
+                )
                 print_colored("Key exchange failed", Color.RED)
                 self.socket.sendto("NO".encode("utf-8"), addr)
 

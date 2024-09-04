@@ -55,6 +55,6 @@ class TunClient:
         else:
             print_colored("Server rejected the key", Color.RED)
             return
-        
+
         threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
