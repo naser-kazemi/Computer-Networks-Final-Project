@@ -14,7 +14,7 @@ SUBNET="172.16.0.0/24"
 # create the tun device
 sudo ip tuntap add dev $NIC mode tun
 
-sudo ip link set dev tun0 up
+sudo ip link set dev $NIC up
 
 sudo ip addr flush dev $NIC
 sudo ip addr add $SUBNET dev $NIC

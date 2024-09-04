@@ -23,11 +23,6 @@ def print_colored(text, color=Color.WHITE):
 
 
 class CLIArgs:
-    mode: str = tyro.Option(
-        default="client",
-        help="Mode of operation: server or client",
-    )
-
     interface: str = tyro.Option(
         default="tun0",
         help="Name of the TUN interface",
