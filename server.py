@@ -19,7 +19,7 @@ class TunServer:
     def read_from_tun(self):
         while True:
             packet = self.tun_handler.read()
-            self.send_pakcet(packet)
+            self.send_packet(packet)
 
     def read_from_socket(self):
         while True:
@@ -27,20 +27,22 @@ class TunServer:
             print_colored(f"Received packet from {addr}", Color.YELLOW)
             self.tun_handler.write(ends_packet)
 
-    def send_pakcet(self, packet):
+    def send_packet(self, packet):
         if len(packet) > 0:
             packet = self.tun_handler.process_packet(packet)
 
         if packet is not None:
             self.socket.sendto(packet, (self.client_ip, self.port))
-            print_colored(f"Sent packet to {self.client_ip}:{self.port}", Color.GREEN)
+            print_colored(
+                f"Sent packet to {self.client_ip}:{self.port}", Color.GREEN)
         else:
             print_colored("Ignoring the packet", Color.YELLOW)
 
     def start(self):
         self.socket.bind(("0.0.0.0", self.port))
         ip = socket.gethostbyname(socket.gethostname())
-        print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
+        print_colored(
+            f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
 
         while True:
             data, addr = self.socket.recvfrom(2048)

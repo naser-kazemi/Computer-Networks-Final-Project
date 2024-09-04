@@ -19,7 +19,7 @@ class TunClient:
     def read_from_tun(self):
         while True:
             packet = self.tun_handler.read()
-            self.send_pakcet(packet)
+            self.send_packet(packet)
 
     def read_from_socket(self):
         while True:
@@ -27,7 +27,7 @@ class TunClient:
             print_colored(f"Received packet from {addr}", Color.YELLOW)
             self.tun_handler.write(ends_packet)
 
-    def send_pakcet(self, packet):
+    def send_packet(self, packet):
         if len(packet) > 0:
             packet = self.tun_handler.process_packet(packet)
 
