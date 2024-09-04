@@ -37,6 +37,6 @@ echo "Masquerading all packets from $SUBNET to the internet"
 
 sudo $PYTHON_EXECUTABLE $SCRIPT_PATH
 
-sudo ip tuntap del dev tun0 mode tun
+sudo ip tuntap del dev $NIC mode tun
 
 echo "Tun device $NIC deleted"
