@@ -44,7 +44,7 @@ def main():
             else:
                 print("No data payload found. Sending the packet as is.")
                 # os.write(tun, packet)
-            # os.write(tun, packet)
+            os.write(tun, packet)
             # Send the packet to the destination ip
 
     except KeyboardInterrupt:
