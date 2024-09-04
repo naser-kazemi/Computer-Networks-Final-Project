@@ -38,11 +38,6 @@ class CLIArgs:
         help="Port number",
     )
 
-    subnet: str = tyro.Option(
-        default="",
-        help="Subnet for the TUN interface",
-    )
-
 
 def get_args():
     return tyro.cli(CLIArgs)
