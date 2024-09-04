@@ -33,7 +33,7 @@ sleep 5
 
 sudo sysctl -w net.ipv4.ip_forward=1
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --tun-name $NIC --server-ip 34.65.143.49 --port 8080
 
 sudo ip tuntap del dev $NIC mode tun
 
