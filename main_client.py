@@ -13,3 +13,6 @@ def main():
     server = TunClient(tun_name, server_ip, port, SECRET)
 
     server.start()
+    
+if __name__ == "__main__":
+    main()

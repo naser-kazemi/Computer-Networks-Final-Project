@@ -12,3 +12,7 @@ def main():
     server = TunServer(tun_name, port, SECRET)
 
     server.start()
+
+
+if __name__ == "__main__":
+    main()

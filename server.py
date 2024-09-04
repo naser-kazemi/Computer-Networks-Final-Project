@@ -44,8 +44,6 @@ class TunServer:
         print_colored(
             f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
         
-        print_colored("Waiting for key exchange", Color.YELLOW)
-
         while True:
             data, addr = self.socket.recvfrom(2048)
             if data.decode("utf-8") == self.key:
