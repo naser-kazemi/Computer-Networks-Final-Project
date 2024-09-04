@@ -91,7 +91,7 @@ class TUNServerClient:
         if data.decode() != 'OK':
             print('Invalid Key')
             return
-        print('Connected to server')
+        print('Connected to sserver')
 
     def start_server(self):
         self.sock.bind(('0.0.0.0', self.port))
