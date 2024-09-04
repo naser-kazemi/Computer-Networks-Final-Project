@@ -1,164 +1,60 @@
-from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
-from packet_parser import PacketParser
-import os
-import subprocess
+from tun import TunPacketHandler
+from utils import print_colored, Color
 import socket
 
-from tun import create_tun_interface, setup_routing_by_domain, create_udp_socket
+from scapy.all import IP, TCP
 
-def main():
-    SERVER_IP = '10.211.55.5'
-    SERVER_PORT = 80
-    create_tun_interface()
-    setup_routing_by_domain(nic=tun.name, domain='neverssl.com')
-    parser = PacketParser()
-    udp_socket = create_udp_socket()
-    try:
+import threading
+
+
+class TunClient:
+    def __init__(self, name, server_ip, port, key):
+        self.tun_handler = TunPacketHandler(name)
+        self.server_ip = server_ip
+        self.port = port
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.key = key
+        self.mss = self.tun_handler.mss
+
+    def read_from_tun(self):
         while True:
-            packet = tun.read(tun.mtu)
-            data = parser.parse_packet(packet, print_data=True)
-            dest_ip, dest_port = data.get('destination_ip'), data.get('destination_port')
-            payload = data.get('data_payload')
-            if data.get('is_tcp'):
-                print(f"Data: {payload}")
-                # send the packet to the destination ip and port
-                udp_socket.sendto(bytes(payload), (SERVER_IP, SERVER_PORT))
-                # get the response from the destination ip
-                # response, addr = udp_socket.recvfrom(2048)
-                # print(f"Response: {response}")
-                # tun.write(response)
-            tun.write(packet)
-    except KeyboardInterrupt:
-        print('Shutting down TUN device')
-    finally:
-        tun.down()
-        tun.close()
+            packet = self.tun_handler.read()
+            self.send_pakcet(packet)
 
+    def read_from_socket(self):
+        while True:
+            ends_packet, addr = self.socket.recvfrom(self.mss)
+            print_colored(f"Received packet from {addr}", Color.YELLOW)
+            self.tun_handler.write(ends_packet)
 
-if __name__ == '__main__':
-    main()
+    def send_pakcet(self, packet):
+        if len(packet) > 0:
+            packet = self.tun_handler.process_packet(packet)
 
-#
-#
-# import os
-# import fcntl
-# import struct
-# import subprocess
-# from array import array
-#
-# from pytun import TunTapDevice, IFF_TUN, IFF_NO_PI
-# from packet_parser import PacketParser
+        if packet is not None:
+            self.socket.sendto(packet, (self.server_ip, self.port))
+            print_colored(f"Sent packet to {self.server_ip}:{self.port}", Color.GREEN)
+        else:
+            print_colored("Ignoring the packet", Color.YELLOW)
 
+    def start(self):
+        print_colored(
+            f"Starting the TUN client for {self.server_ip}:{self.port}", Color.YELLOW
+        )
 
-# def create_tun_interface():
-#     tun = TunTapDevice(flags=IFF_TUN | IFF_NO_PI, name='tun0')
-#     tun.addr = '172.16.0.0'
-#     tun.netmask = '255.255.255.0'
-#     tun.mtu = 1500
-#     tun.up()
-#
+        self.socket.sendto(self.key.encode("utf-8"), (self.server_ip, self.port))
 
-#
-#     return tun
+        print_colored("Performed key exchange with the server", Color.YELLOW)
 
-#
-# def create_tun_interface(name='tun0'):
-#     # Flags to create a TUN device
-#     IFF_TUN = 0x0001
-#     IFF_NO_PI = 0x1000
-#
-#     # IOCTL command to configure the device
-#     TUNSETIFF = 0x400454ca
-#
-#     try:
-#         tun = os.open('/dev/net/tun', os.O_RDWR)
-#         ifr = struct.pack('16sH', name.encode('utf-8'), IFF_TUN | IFF_NO_PI)
-#         fcntl.ioctl(tun, TUNSETIFF, ifr)
-#         print(f"TUN interface {name} created")
-#
-#         # Set up the TUN interface
-#         os.system(f'sudo ip addr add 172.16.0.2/24 dev {name}')
-#         os.system(f'sudo ip link set up dev {name}')
-#
-#         return tun
-#     except Exception as e:
-#         print(f"Error creating TUN interface: {e}")
-#         exit(1)
-#
-#     print(f'TUN device {tun.name} created with IP {tun.addr}')
-#
-#     return tun
-#
-# def create_tun_interface(dev_name='tun0', addr='172.16.0.0', netmask='255.255.255.0'):
-#     TUNSETIFF = 0x400454ca
-#     TUNSETOWNER = TUNSETIFF + 2
-#     IFF_TUN = 0x0001
-#     IFF_NO_PI = 0x1000
-#     # Open the TUN/TAP interface file, in binary mode
-#     # tun = os.open('/dev/net/tun', os.O_RDWR)
-#     tun = open('/dev/net/tun', 'r+b', buffering=0)
-#
-#     # Prepare the struct for ioctl call to create a TUN device
-#     ifr = struct.pack('16sH', b'tun0', IFF_TUN | IFF_NO_PI)
-#     fcntl.ioctl(tun, TUNSETIFF, ifr)
-#     fcntl.ioctl(tun, TUNSETOWNER, 1000)
-#
-#     subprocess.check_call(f'ifconfig {dev_name} {addr} pointopoint 172.16.0.2 up',
-#                           shell=True)
-#
-#     # Bring up the interface using the ip command
-#     subprocess.check_call(['ip', 'addr', 'add', f'{addr}/{netmask}', 'dev', dev_name])
-#     subprocess.check_call(['ip', 'link', 'set', dev_name, 'up'])
-#
-#     return tun
-#
-#
-# def main():
-#     tun = create_tun_interface()
-#     MSS = 1500
-#     parser = PacketParser()
-#     try:
-#         while True:
-#             # packet = list(os.read(tun, MSS))
-#             packet = array('B', os.read(tun.fileno(), 2048))
-#
-#             print(f"Packet: {packet}")
-#             # data = parser.parse_packet(packet, print_data=True)
-#             # if data:
-#             #     print(f"Source IP: {data['source_ip']}, Destination IP: {data['destination_ip']}")
-#             #     print(f"Data: {data['data_payload']}")
-#             # tun.write(packet)
-#             # os.write(tun.fileno(), packet)
-#             packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
-#             # Change ICMP type code to Echo Reply (0).
-#             packet[20] = 0
-#             # Clear original ICMP Checksum field.
-#             packet[22] = 0
-#             packet[23] = 0
-#             # Calculate new checksum.
-#             checksum = 0
-#             # for every 16-bit of the ICMP payload:
-#             for i in range(20, len(packet), 2):
-#                 # half_word = (ord(packet[i]) << 8) + ord(packet[i + 1])
-#                 half_word = (packet[i] << 8) + (packet[i + 1])
-#                 checksum += half_word
-#             # Get one's complement of the checksum.
-#             checksum = ~(checksum + 4) & 0xffff
-#             # Put the new checksum back into the packet.
-#             # packet[22] = chr(checksum >> 8)
-#             # packet[23] = chr(checksum & ((1 << 8) - 1))
-#             packet[22] = checksum >> 8
-#             packet[23] = checksum & ((1 << 8) - 1)
-#
-#             # Write the reply packet into TUN device.
-#             # os.write(tun, ''.join(packet))
-#             os.write(tun.fileno(), bytes(packet))
-#     except KeyboardInterrupt:
-#         print('Shutting down TUN device')
-#     finally:
-#         # os.close(tun)
-#         tun.close()
-#
-#
-# if __name__ == '__main__':
-#     main()
+        data, addr = self.socket.recvfrom(2048)
+
+        print_colored(f"Received data from {addr}: {data.decode('utf-8')}")
+
+        if data.decode("utf-8") == "OK":
+            print_colored("Server accepted the key", Color.GREEN)
+        else:
+            print_colored("Server rejected the key", Color.RED)
+            return
+        
+        threading.Thread(target=self.read_from_tun).start()
+        threading.Thread(target=self.read_from_socket).start()

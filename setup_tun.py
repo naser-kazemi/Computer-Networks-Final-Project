@@ -1,16 +1,22 @@
 import os
 
 from packet_parser import PacketParser
-from tun import create_tun_interface, create_udp_socket, open_tun_interface, \
-    delete_tun_interface, open_ens_interface
+from tun import (
+    create_tun_interface,
+    create_udp_socket,
+    open_tun_interface,
+    delete_tun_interface,
+    open_ens_interface,
+)
 import socket
 
 
-SERVER_IP = '34.65.143.49'
+SERVER_IP = "34.65.143.49"
 SERVER_PORT = 80
 
+
 def main():
-    tun_name = 'tun0'
+    tun_name = "tun0"
     buffer_size = 1500
     try:
         # create_tun_interface(tun_name, subnet='172.16.0.2/24')
@@ -25,7 +31,7 @@ def main():
             packet = os.read(tun, buffer_size)
             data = parser.parse_packet(packet, print_data=False)
             # print(f"Data: {data}")
-            if 'data_payload' in data and data['data_payload'] and data['is_tcp']:
+            if "data_payload" in data and data["data_payload"] and data["is_tcp"]:
                 # print(f"Data: {data['data_payload'].decode('utf-8')}")
                 print(f"Data: {data['data_payload']}")
                 # os.write(tun, data['data_payload'])
@@ -42,12 +48,12 @@ def main():
                 # os.write(tun, packet)
             # os.write(tun, packet)
             # Send the packet to the destination ip
-            
+
     except KeyboardInterrupt:
-        print('Shutting down Tun device')
+        print("Shutting down Tun device")
     finally:
         delete_tun_interface(tun_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
