@@ -1,41 +1,10 @@
 from scapy.layers.inet import IP, UDP, TCP
 from scapy.layers.dns import EDNS0TLV, DNSRROPT, DNSQR, DNS
 from scapy.all import raw
-import time
 
 import os
-import subprocess
-import socket
 import fcntl
 import struct
-
-
-def create_tun_interface(interface_name="tun0", subnet="172.16.0.0/24"):
-    try:
-        # Bring the interface up
-        subprocess.run(
-            ["sudo", "ip", "link", "set", "dev", interface_name, "up"], check=True
-        )
-
-        print(f"TUN interface {interface_name} created successfully.")
-
-    except subprocess.CalledProcessError as e:
-        delete_tun_interface(interface_name)
-        print(f"Error creating TUN interface: {e}")
-
-
-def delete_tun_interface(interface_name):
-    try:
-        # Bring the interface down
-        subprocess.run(
-            ["sudo", "ip", "link", "set", interface_name, "down"], check=True
-        )
-        # # Delete the TUN interface
-        # subprocess.run(['sudo', 'ip', 'tun', 'del', 'dev', interface_name, 'mode', 'tun'], check=True)
-
-        print(f"TUN interface {interface_name} brought down and deleted successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
 
 
 TUNSETIFF = 0x400454CA
@@ -63,27 +32,31 @@ class TunPacketHandler:
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
-        # payload_len = len(payload)
+        payload_len = len(payload)
 
-        # # Creating a DNS packet with EDNS0 option that carries a custom payload
-        # # The EDNS0 option uses a TLV (Type-Length-Value) format
-        # edns_tlv = EDNS0TLV(
-        #     optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
-        # )
-        # edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
+        # Creating a DNS packet with EDNS0 option that carries a custom payload
+        # The EDNS0 option uses a TLV (Type-Length-Value) format
+        edns_tlv = EDNS0TLV(
+            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        )
+        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
 
-        # # Constructing DNS query with EDNS0
-        # dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
-        # dns_packet = DNS(qd=dns_query, ar=edns_opt)
+        # Constructing DNS query with EDNS0
+        dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
+        dns_packet = DNS(qd=dns_query, ar=edns_opt)
 
-        # return bytes(dns_packet)
-        return payload
+        return bytes(dns_packet)
 
     def from_edns(self, packet):
         "extract payload from EDNS0"
-        # dns = DNS(packet)
-        return packet
-        
+        dns = DNS(packet)
+        for additional in dns.ar:
+            if isinstance(additional, DNSRROPT):
+                for opt in additional.rdata:
+                    if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+                        payload = opt.optdata
+                    return payload
+        return None
 
     def wrap_tcp_packet(self, ip):
         tcp = ip[TCP]
@@ -100,10 +73,11 @@ class TunPacketHandler:
                 options[i] = (option[0], mtu)
                 break
         ip[TCP].options = options
+        tcp = ip[TCP]
         del ip.chksum
-        del ip[TCP].chksum
+        del tcp.chksum
         ip.chksum
-        ip[TCP].chksum
+        tcp.chksum
 
     def read(self):
         return os.read(self.tun, self.mss)
