@@ -101,9 +101,10 @@ class TunPacketHandler:
 
     def modify_options_mss(self, ip):
         options = ip[TCP].options
-        for option in options:
+        for i, option in enumerate(options):
             if option[0] == "MSS":
-                option[1] = min(option[1], self.mtu)
+                mtu = min(option[1], self.mtu)
+                options[i] = (option[0], mtu)
                 break
         ip[TCP].options = options
         del ip.chksum
