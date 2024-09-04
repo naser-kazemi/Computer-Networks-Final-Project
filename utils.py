@@ -23,20 +23,11 @@ def print_colored(text, color=Color.WHITE):
 
 
 class CLIArgs:
-    tun_name: str = tyro.Option(
-        default="tun0",
-        help="Name of the TUN interface",
-    )
+    tun_name: str = "tun0"
 
-    server_ip: str = tyro.Option(
-        default="",
-        help="IP address of the server",
-    )
+    server_ip: str = ""
 
-    port: int = tyro.Option(
-        default=8080,
-        help="Port number",
-    )
+    port: int = 8080
 
 
 def get_args():

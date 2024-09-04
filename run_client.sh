@@ -21,7 +21,7 @@ sudo ip link set dev $NIC up
 sudo ip addr flush dev $NIC
 sudo ip addr add $SUBNET dev $NIC
 
-sleep 5
+sleep 1
 
 echo "Tun device $NIC created with ip address $SUBNET"
 
@@ -29,7 +29,7 @@ echo "Tun device $NIC created with ip address $SUBNET"
 IP_ADDRESS=$(dig +short neverssl.com)
 sudo ip route add $IP_ADDRESS dev $NIC
 
-sleep 5
+sleep 1
 
 sudo sysctl -w net.ipv4.ip_forward=1
 

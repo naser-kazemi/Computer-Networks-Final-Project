@@ -24,7 +24,7 @@ echo "Tun device $NIC created with ip address $SUBNET"
 
 # get the ip address of the neverssl.com server using dig
 
-sleep 5
+sleep 1
 
 sudo sysctl -w net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
