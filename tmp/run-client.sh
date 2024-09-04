@@ -1,3 +1,7 @@
+source ../.venv/bin/activate
+
+# Path to your Python executable
+PYTHON_EXECUTABLE=$(which python)
 
 cleanup() {
     echo "Terminating the background process..."
@@ -10,7 +14,7 @@ NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
 
 echo "Resolved neverssl.com to IP: $NEVERSSL_IP"
 
-sudo python main.py --mode client --subnet 172.16.0.2/24 --port 12345 --server 194.147.142.24:12345 &
+sudo $PYTHON_EXECUTABLE main.py --mode client --subnet 172.16.0.2/24 --port 12345 --server 194.147.142.24:12345 &
 pid=$!
 
 trap cleanup INT TERM
