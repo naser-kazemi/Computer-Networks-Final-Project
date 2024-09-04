@@ -14,7 +14,7 @@ NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
 
 echo "Resolved neverssl.com to IP: $NEVERSSL_IP"
 
-sudo $PYTHON_EXECUTABLE main.py --mode client --subnet 172.16.0.2/24 --port 12345 --server 34.65.143.49:8080 &
+sudo $PYTHON_EXECUTABLE main.py --mode client --subnet 172.16.0.2/24 --port 12345 --server 34.65.143.49:12345 &
 pid=$!
 
 trap cleanup INT TERM
