@@ -3,10 +3,8 @@ import os
 from packet_parser import PacketParser
 from tun import (
     create_tun_interface,
-    create_udp_socket,
     open_tun_interface,
     delete_tun_interface,
-    open_ens_interface,
 )
 import socket
 
@@ -26,7 +24,7 @@ def main():
         tun = open_tun_interface(tun_name)
         # ens = open_ens_interface('ens4')
         print(f"TUN interface {tun_name} is opened.")
-        udp_socket = create_udp_socket()
+        # udp_socket = create_udp_socket()
         while True:
             packet = os.read(tun, buffer_size)
             data = parser.parse_packet(packet, print_data=False)
@@ -38,11 +36,11 @@ def main():
                 # print(f"Type of packet: {type(packet)}")
                 # os.write(tun, packet)
                 # create s udp packet with the packet as the payload, and destination ip and port as the server ip and port
-                udp_socket.sendto(packet, (SERVER_IP, SERVER_PORT))
+                # udp_socket.sendto(packet, (SERVER_IP, SERVER_PORT))
                 # get the response from the destination ip
-                response, addr = udp_socket.recvfrom(2048)
-                print(f"Response: {response}")
-                os.write(tun, response)
+                # response, addr = udp_socket.recvfrom(2048)
+                # print(f"Response: {response}")
+                # os.write(tun, response)
             else:
                 print("No data payload found. Sending the packet as is.")
                 # os.write(tun, packet)
