@@ -32,16 +32,14 @@ class TunServer:
 
         if packet is not None:
             self.socket.sendto(packet, (client_ip, client_port))
-            print_colored(
-                f"Sent packet to {client_ip}:{client_port}", Color.GREEN)
+            print_colored(f"Sent packet to {client_ip}:{client_port}", Color.GREEN)
         else:
             print_colored("Ignoring the packet", Color.YELLOW)
 
     def start(self):
         self.socket.bind(("0.0.0.0", self.port))
         ip = socket.gethostbyname(socket.gethostname())
-        print_colored(
-            f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
+        print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
 
         while True:
             data, addr = self.socket.recvfrom(2048)
@@ -53,11 +51,19 @@ class TunServer:
                 self.socket.sendto("OK".encode("utf-8"), addr)
                 client_ip = addr[0]
                 client_port = addr[1]
-                threading.Thread(target=self.read_from_tun,
-                                 args=(client_ip, client_port,)).start()
                 threading.Thread(
-                    target=self.read_from_socket, args=(
-                        client_ip, client_port,)
+                    target=self.read_from_tun,
+                    args=(
+                        client_ip,
+                        client_port,
+                    ),
+                ).start()
+                threading.Thread(
+                    target=self.read_from_socket,
+                    args=(
+                        client_ip,
+                        client_port,
+                    ),
                 ).start()
             else:
                 print_colored(
