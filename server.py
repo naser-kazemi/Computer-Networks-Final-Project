@@ -28,7 +28,7 @@ class TunServer:
             self.tun_handler.write(ends_packet)
 
     def send_packet(self, packet):
-        if len(packet) > 0:
+        if packet and len(packet) > 0:
             packet = self.tun_handler.process_packet(packet)
 
         if packet is not None:
