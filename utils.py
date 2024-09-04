@@ -23,7 +23,7 @@ def print_colored(text, color=Color.WHITE):
 
 
 class CLIArgs:
-    interface: str = tyro.Option(
+    tun_name: str = tyro.Option(
         default="tun0",
         help="Name of the TUN interface",
     )
@@ -46,3 +46,6 @@ class CLIArgs:
 
 def get_args():
     return tyro.cli(CLIArgs)
+
+
+SECRET = "secret"
