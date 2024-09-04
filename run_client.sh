@@ -9,7 +9,7 @@ PYTHON_EXECUTABLE=$(which python)
 SCRIPT_PATH="client.py"
 
 NIC="tun0"
-SUBNET="172.16.0.0/24"
+SUBNET="172.16.0.2/24"
 
 # create the tun device
 sudo ip tuntap add dev $NIC mode tun
