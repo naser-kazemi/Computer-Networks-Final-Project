@@ -63,34 +63,27 @@ class TunPacketHandler:
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
-        payload_len = len(payload)
+        # payload_len = len(payload)
 
-        # Creating a DNS packet with EDNS0 option that carries a custom payload
-        # The EDNS0 option uses a TLV (Type-Length-Value) format
-        edns_tlv = EDNS0TLV(
-            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
-        )
-        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
+        # # Creating a DNS packet with EDNS0 option that carries a custom payload
+        # # The EDNS0 option uses a TLV (Type-Length-Value) format
+        # edns_tlv = EDNS0TLV(
+        #     optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        # )
+        # edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
 
-        # Constructing DNS query with EDNS0
-        dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
-        dns_packet = DNS(qd=dns_query, ar=edns_opt)
+        # # Constructing DNS query with EDNS0
+        # dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
+        # dns_packet = DNS(qd=dns_query, ar=edns_opt)
 
-        return bytes(dns_packet)
+        # return bytes(dns_packet)
+        return payload
 
     def from_edns(self, packet):
         "extract payload from EDNS0"
-        parsed_packet = IP(packet)
-        if parsed_packet.haslayer(DNS):
-            dns_layer = parsed_packet[DNS]
-            # Check for the presence of EDNS0 options
-            if dns_layer.ar is not None and isinstance(dns_layer.ar, DNSRROPT):
-                for opt in dns_layer.ar.opt:
-                    if isinstance(opt, EDNS0TLV) and opt.option_code == 65001:
-                        # Decode the custom payload
-                        payload = opt.option_data
-                        return payload
-        return None
+        # dns = DNS(packet)
+        return packet
+        
 
     def wrap_tcp_packet(self, ip):
         tcp = ip[TCP]
