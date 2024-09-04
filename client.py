@@ -8,10 +8,10 @@ import threading
 
 
 class TunClient:
-    def __init__(self, name, server_ip, port, key):
+    def __init__(self, name, server_ip, server_port, key):
         self.tun_handler = TunPacketHandler(name)
         self.server_ip = server_ip
-        self.port = port
+        self.server_port = server_port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.key = key
         self.mss = self.tun_handler.mss
@@ -32,17 +32,20 @@ class TunClient:
             packet = self.tun_handler.process_packet(packet)
 
         if packet is not None:
-            self.socket.sendto(packet, (self.server_ip, self.port))
-            print_colored(f"Sent packet to {self.server_ip}:{self.port}", Color.GREEN)
+            self.socket.sendto(packet, (self.server_ip, self.server_port))
+            print_colored(
+                f"Sent packet to {self.server_ip}:{self.server_port}", Color.GREEN
+            )
         else:
             print_colored("Ignoring the packet", Color.YELLOW)
 
     def start(self):
         print_colored(
-            f"Starting the TUN client for {self.server_ip}:{self.port}", Color.YELLOW
+            f"Starting the TUN client for {self.server_ip}:{self.server_port}",
+            Color.YELLOW,
         )
 
-        self.socket.sendto(self.key.encode("utf-8"), (self.server_ip, self.port))
+        self.socket.sendto(self.key.encode("utf-8"), (self.server_ip, self.server_port))
 
         print_colored("Performed key exchange with the server", Color.YELLOW)
 
