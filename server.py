@@ -30,6 +30,7 @@ class TunServer:
     def send_packet(self, packet, client_ip, client_port):
         print_colored(f"Received packet from TUN", Color.PURPLE)
         if packet and len(packet) > 0:
+            print_colored("Processing the packet", Color.PURPLE)
             packet = self.tun_handler.process_packet(packet)
             
         print_colored(packet, Color.PURPLE)
