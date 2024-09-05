@@ -68,16 +68,16 @@ class TunServer:
         threading.Thread(
             # target=self.read_from_tun,
             target=self.tun_handler.read_data_from_tun,
-            args=(
-                client_ip,
-                client_port,
-            ),
+            # args=(
+            #     client_ip,
+            #     client_port,
+            # ),
         ).start()
         threading.Thread(
             # target=self.read_from_socket,
             target=self.tun_handler.read_data_from_socket,
-            args=(
-                client_ip,
-                client_port,
-            ),
+            # args=(
+            #     client_ip,
+            #     client_port,
+            # ),
         ).start()
