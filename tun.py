@@ -89,6 +89,7 @@ class TunPacketHandler:
 
     def write(self, packet):
         packet = self.from_edns(packet)
+        print("Packet: ", packet)
         if packet and len(packet) > 0:
             os.write(self.tun, packet)
 
