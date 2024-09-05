@@ -72,13 +72,10 @@ class TunPacketHandler:
         )
 
         return bytes(dns_packet)
-        # return payload
 
     def from_edns(self, packet):
         "extract payload from EDNS0"
-        # print("Packet: ", packet)
         dns = DNS(packet)
-        # dns.show()
         for additional in dns.ar:
             if isinstance(additional, DNSRROPT):
                 # print("Additional: ", additional)
@@ -89,15 +86,6 @@ class TunPacketHandler:
                         # print("Payload: ", payload)
                         return payload
         return None
-        # return packet
-        # dns_packet = DNS(packet)
-        # payload = b""
-        # for additional in dns_packet.ar:
-        #     if isinstance(additional, DNSRROPT):
-        #         for opt in additional.rdata:
-        #             if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
-        #                 payload = opt.optdata
-        # return payload
 
     def wrap_tcp_packet(self, ip):
         if "S" in ip[TCP].flags:
@@ -105,45 +93,34 @@ class TunPacketHandler:
         return raw(ip)
 
     def modify_options_mss(self, ip):
-        new_options = []
-        for option in ip[TCP].options:
+        options = ip[TCP].options
+        for i, option in enumerate(options):
             if option[0] == "MSS":
                 mtu = min(option[1], self.mtu)
-                print_colored(
-                    f"Changing MSS from {option[1]} to {mtu}", Color.YELLOW)
-                new_options.append(("MSS", mtu))
-            else:
-                new_options.append(option)
-        ip[TCP].options = new_options
-        # ip[TCP].show()
+                options[i] = (option[0], mtu)
+                break
+        ip[TCP].options = options
+        tcp = ip[TCP]
         del ip.chksum
-        del ip[TCP].chksum
+        del tcp.chksum
         ip.chksum
-        ip[TCP].chksum
+        tcp.chksum
 
     def read(self):
         packet = os.read(self.tun, self.mss)
-        print_colored(f"Read {len(packet)} bytes from TUN", Color.YELLOW)
-        print_colored(f"Packet: {packet}", Color.ORANGE)
         return packet
 
     def write(self, packet):
         packet = self.from_edns(packet)
-        print("Packet: ", packet)
         if packet and len(packet) > 0:
-            print("Writing to TUN")
             os.write(self.tun, packet)
 
     def process_packet(self, packet):
 
         ip = IP(packet)
         # check if packet is TCP
-        ip.show()
-        print("IP Protocol: ", ip.proto)
         if ip.proto == 6:
-            print("Processing TCP packet")
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
-            print("EDNS Packet: ", edns_packet)
             return edns_packet
         return None
