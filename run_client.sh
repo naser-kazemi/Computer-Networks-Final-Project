@@ -11,8 +11,6 @@ SCRIPT_PATH="main_client.py"
 NIC="tun0"
 SUBNET="172.16.0.2/24"
 
-rm -rf /dev/net/tun
-
 # create the tun device
 sudo ip tuntap add dev $NIC mode tun
 

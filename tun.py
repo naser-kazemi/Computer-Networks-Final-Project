@@ -49,18 +49,18 @@ class TunPacketHandler:
 
     def from_edns(self, packet):
         "extract payload from EDNS0"
-        print("Packet: ", packet)
+        # print("Packet: ", packet)
         dns = DNS(packet)
-        dns.show()
+        # dns.show()
         for additional in dns.ar:
             if isinstance(additional, DNSRROPT):
-                print("Additional: ", additional)
+                # print("Additional: ", additional)
                 for opt in additional.rdata:
-                    print("Opt: ", opt)
+                    # print("Opt: ", opt)
                     if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
                         payload = opt.optdata
-                        print("Payload: ", payload)
-                    return payload
+                        # print("Payload: ", payload)
+                        return payload
         return None
 
     def wrap_tcp_packet(self, ip):
