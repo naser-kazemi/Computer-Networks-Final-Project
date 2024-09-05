@@ -49,7 +49,7 @@ class TunClient:
 
         print_colored("Performed key exchange with the server", Color.YELLOW)
 
-        data, addr = self.socket.recvfrom(2048)
+        data, addr = self.socket.recvfrom(1024)
 
         print_colored(f"Received data from {addr}: {data.decode('utf-8')}")
 

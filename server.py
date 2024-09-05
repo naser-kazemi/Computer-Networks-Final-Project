@@ -17,6 +17,7 @@ class TunServer:
 
     def read_from_tun(self, client_ip, client_port):
         while True:
+            print("Reading from TUN")
             packet = self.tun_handler.read()
             self.send_packet(packet, client_ip, client_port)
 
@@ -45,7 +46,7 @@ class TunServer:
         print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
 
         while True:
-            data, addr = self.socket.recvfrom(2048)
+            data, addr = self.socket.recvfrom(1024)
             if data.decode("utf-8") == self.key:
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
