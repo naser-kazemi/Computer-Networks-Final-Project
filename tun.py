@@ -82,7 +82,7 @@ class TunPacketHandler:
             else:
                 new_options.append(option)
         ip[TCP].options = new_options
-        ip[TCP].show()
+        # ip[TCP].show()
         del ip.chksum
         del ip[TCP].chksum
         ip.chksum
