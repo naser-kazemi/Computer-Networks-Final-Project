@@ -102,6 +102,7 @@ class TunPacketHandler:
         ip.show()
         print(ip.proto)
         if ip.proto == 6:
+            print("Processing TCP packet")
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
             return edns_packet
