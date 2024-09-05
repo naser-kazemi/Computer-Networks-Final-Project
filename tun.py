@@ -1,4 +1,5 @@
 import random
+import subprocess
 from scapy.layers.inet import IP, UDP, TCP
 from scapy.layers.dns import EDNS0TLV, DNSRROPT, DNSQR, DNS
 from scapy.all import raw
@@ -29,12 +30,28 @@ TTL = 0x80000000
 class TunPacketHandler:
     def __init__(self, name, server_host, server_port, mss=1500, mtu=1300):
         self.name = name
-        self.tun = open_tun_interface(name)
+        self.tun = None
+        self.create_tun_interface()
         self.mss = mss
         self.mtu = mtu
         self.sock = None
         self.server_host = server_host
         self.server_port = server_port
+        
+    def create_tun_interface(self):
+        try:
+            self.tun = os.open('/dev/net/tun', os.O_RDWR)
+            ifr = struct.pack('16sH', self.name.encode(
+                'utf-8'), IFF_TUN | IFF_NO_PI)
+            fcntl.ioctl(self.tun, TUNSETIFF, ifr)
+            print(f"TUN interface {self.name} created")
+            subprocess.run(['sudo', 'ip', 'addr', 'add',
+                           self.subnet, 'dev', self.name])
+            subprocess.run(['sudo', 'ip', 'link', 'set',
+                           'up', 'dev', self.name])
+        except Exception as e:
+            print(f"Error creating TUN interface: {e}")
+            exit(1)
 
     def to_edns(self, payload):
         edns_opt = DNSRROPT(

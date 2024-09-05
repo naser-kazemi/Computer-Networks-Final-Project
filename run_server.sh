@@ -12,15 +12,15 @@ NIC="tun0"
 SUBNET="172.16.0.2/24"
 
 # create the tun device
-sudo ip tuntap add dev $NIC mode tun
+# sudo ip tuntap add dev $NIC mode tun
 
-sudo ip link set dev $NIC up
+# sudo ip link set dev $NIC up
 
-sudo ip addr flush dev $NIC
-sudo ip addr add $SUBNET dev $NIC
+# sudo ip addr flush dev $NIC
+# sudo ip addr add $SUBNET dev $NIC
 
 
-echo "Tun device $NIC created with ip address $SUBNET"
+# echo "Tun device $NIC created with ip address $SUBNET"
 
 # get the ip address of the neverssl.com server using dig
 
