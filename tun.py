@@ -59,6 +59,7 @@ class TunPacketHandler:
                     print("Opt: ", opt)
                     if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
                         payload = opt.optdata
+                        print("Payload: ", payload)
                     return payload
         return None
 
