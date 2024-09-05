@@ -51,6 +51,7 @@ class TunPacketHandler:
         "extract payload from EDNS0"
         print("Packet: ", packet)
         dns = DNS(packet)
+        dns.show()
         for additional in dns.ar:
             if isinstance(additional, DNSRROPT):
                 for opt in additional.rdata:
