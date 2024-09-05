@@ -118,6 +118,9 @@ class TunPacketHandler:
     def process_packet(self, packet):
 
         ip = IP(packet)
+        
+        ip.show()
+        
         # check if packet is TCP
         if ip.haslayer(TCP):
             packet = self.wrap_tcp_packet(ip)
