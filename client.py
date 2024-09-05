@@ -30,6 +30,8 @@ class TunClient:
     def send_packet(self, packet):
         if packet and len(packet) > 0:
             packet = self.tun_handler.process_packet(packet)
+            
+        print_colored("Packet: ", packet, Color.ORANGE)
 
         if packet is not None:
             self.socket.sendto(packet, (self.server_ip, self.server_port))

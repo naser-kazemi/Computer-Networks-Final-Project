@@ -108,8 +108,5 @@ class TunPacketHandler:
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
             print("EDNS Packet: ", edns_packet)
-            ip = IP(edns_packet)
-            ip.show()
             return edns_packet
-        
         return None
