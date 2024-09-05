@@ -14,6 +14,7 @@ class TunServer:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.key = key
         self.mss = self.tun_handler.mss
+        self.tun_handler.sock = self.socket
 
     # def read_from_tun(self, client_ip, client_port):
     #     while True:
