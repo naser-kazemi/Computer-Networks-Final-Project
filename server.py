@@ -43,6 +43,7 @@ class TunServer:
 
         while True:
             data, addr = self.socket.recvfrom(2048)
+            print(data)
             if data.decode("utf-8") == self.key:
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
