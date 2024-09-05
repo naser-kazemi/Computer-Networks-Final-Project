@@ -89,7 +89,9 @@ class TunPacketHandler:
         ip[TCP].chksum
 
     def read(self):
-        return os.read(self.tun, self.mss)
+        packet = os.read(self.tun, self.mss)
+        print_colored(f"Read {len(packet)} bytes from TUN", Color.YELLOW)
+        return packet
 
     def write(self, packet):
         packet = self.from_edns(packet)
