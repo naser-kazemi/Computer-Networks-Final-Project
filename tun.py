@@ -119,7 +119,7 @@ class TunPacketHandler:
 
         ip = IP(packet)
         # check if packet is TCP
-        if ip.proto == 6:
+        if ip.haslayer(TCP):
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
             return edns_packet
