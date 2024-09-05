@@ -29,7 +29,6 @@ class TunPacketHandler:
         self.tun = open_tun_interface(name)
         self.mss = mss
         self.mtu = mtu
-        sv = bytes("alda")
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
