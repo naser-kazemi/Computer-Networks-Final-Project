@@ -83,6 +83,7 @@ class TunPacketHandler:
                 new_options.append(option)
         ip[TCP].options = new_options
         # ip[TCP].show()
+        print_colored(f"ip proto: {ip.proto}", Color.YELLOW)
         del ip.chksum
         del ip[TCP].chksum
         ip.chksum
