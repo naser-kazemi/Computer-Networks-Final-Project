@@ -104,7 +104,7 @@ class TunPacketHandler:
     def process_packet(self, packet):
         ip = IP(packet)
         # check if packet is TCP
-        # ip.show()
+        ip.show()
         # print(ip.proto)
         if ip.proto == 6:
             print("Processing TCP packet")
