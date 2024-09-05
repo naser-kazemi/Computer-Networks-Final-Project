@@ -19,7 +19,7 @@ class TunClient:
     def read_from_tun(self):
         while True:
             packet = self.tun_handler.read()
-            # self.send_packet(packet)
+            self.send_packet(packet)
 
     def read_from_socket(self):
         while True:
