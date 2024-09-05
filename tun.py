@@ -40,7 +40,7 @@ class TunPacketHandler:
             tun = os.open('/dev/net/tun', os.O_RDWR)
             ifr = struct.pack('16sH', self.name.encode(
                 'utf-8'), IFF_TUN | IFF_NO_PI)
-            fcntl.ioctl(self.tun, TUNSETIFF, ifr)
+            fcntl.ioctl(tun, TUNSETIFF, ifr)
             print(f"TUN interface {self.name} created")
             subprocess.run(['sudo', 'ip', 'addr', 'add',
                            self.subnet, 'dev', self.name])
