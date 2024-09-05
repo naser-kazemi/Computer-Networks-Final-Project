@@ -6,6 +6,8 @@ import os
 import fcntl
 import struct
 
+from utils import print_colored
+
 
 TUNSETIFF = 0x400454CA
 IFF_TUN = 0x0001
@@ -75,6 +77,7 @@ class TunPacketHandler:
         for option in ip[TCP].options:
             if option[0] == "MSS":
                 mtu = min(option[1], self.mtu)
+                print_colored(f"Changing MSS from {option[1]} to {mtu}", Color.YELLOW)
                 new_options.append(("MSS", mtu))
             else:
                 new_options.append(option)
