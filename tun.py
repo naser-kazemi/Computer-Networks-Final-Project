@@ -83,7 +83,6 @@ class TunPacketHandler:
                 new_options.append(option)
         ip[TCP].options = new_options
         # ip[TCP].show()
-        print_colored(f"ip proto: {ip.proto}", Color.YELLOW)
         del ip.chksum
         del ip[TCP].chksum
         ip.chksum
@@ -106,7 +105,7 @@ class TunPacketHandler:
         ip = IP(packet)
         # check if packet is TCP
         ip.show()
-        print(ip.proto)
+        print("IP Protocol: ", ip.proto)
         if ip.proto == 6:
             print("Processing TCP packet")
             packet = self.wrap_tcp_packet(ip)
