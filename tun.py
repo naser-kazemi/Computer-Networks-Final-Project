@@ -6,7 +6,7 @@ import os
 import fcntl
 import struct
 
-from utils import print_colored
+from utils import Color, print_colored
 
 
 TUNSETIFF = 0x400454CA
