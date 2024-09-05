@@ -8,39 +8,38 @@ import threading
 
 
 class TunClient:
-    def __init__(self, name, server_ip, server_port, key):
-        self.tun_handler = TunPacketHandler(name, server_ip, server_port)
+    def __init__(self, name, subnet, server_ip, server_port, key):
+        self.tun_handler = TunPacketHandler(name, subnet)
         self.server_ip = server_ip
         self.server_port = server_port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.key = key
         self.mss = self.tun_handler.mss
-        self.tun_handler.sock = self.socket
 
-    # def read_from_tun(self):
-    #     while True:
-    #         packet = self.tun_handler.read()
-    #         self.send_packet(packet)
+    def read_from_tun(self):
+        while True:
+            packet = self.tun_handler.read()
+            self.send_packet(packet)
 
-    # def read_from_socket(self):
-    #     while True:
-    #         ends_packet, addr = self.socket.recvfrom(self.mss)
-    #         print_colored(f"Received packet from {addr}", Color.YELLOW)
-    #         self.tun_handler.write(ends_packet)
+    def read_from_socket(self):
+        while True:
+            ends_packet, addr = self.socket.recvfrom(self.mss)
+            print_colored(f"Received packet from {addr}", Color.YELLOW)
+            self.tun_handler.write(ends_packet)
 
-    # def send_packet(self, packet):
-    #     if packet and len(packet) > 0:
-    #         packet = self.tun_handler.process_packet(packet)
-            
-    #     print_colored(f"Packet: {packet}", Color.ORANGE)
+    def send_packet(self, packet):
+        if packet and len(packet) > 0:
+            packet = self.tun_handler.process_packet(packet)
 
-    #     if packet is not None:
-    #         self.socket.sendto(packet, (self.server_ip, self.server_port))
-    #         print_colored(
-    #             f"Sent packet to {self.server_ip}:{self.server_port}", Color.GREEN
-    #         )
-    #     else:
-    #         print_colored("Ignoring the packet", Color.YELLOW)
+        print_colored(f"Packet: {packet}", Color.ORANGE)
+
+        if packet is not None:
+            self.socket.sendto(packet, (self.server_ip, self.server_port))
+            print_colored(
+                f"Sent packet to {self.server_ip}:{self.server_port}", Color.GREEN
+            )
+        else:
+            print_colored("Ignoring the packet", Color.YELLOW)
 
     def start(self):
         print_colored(
@@ -48,7 +47,8 @@ class TunClient:
             Color.YELLOW,
         )
 
-        self.socket.sendto(self.key.encode("utf-8"), (self.server_ip, self.server_port))
+        self.socket.sendto(self.key.encode("utf-8"),
+                           (self.server_ip, self.server_port))
 
         print_colored("Performed key exchange with the server", Color.YELLOW)
 
@@ -62,11 +62,5 @@ class TunClient:
             print_colored("Server rejected the key", Color.RED)
             return
 
-        threading.Thread(
-            # target=self.read_from_tun
-            target=self.tun_handler.read_data_from_tun
-            ).start()
-        threading.Thread(
-            # target=self.read_from_socket
-            target=self.tun_handler.read_data_from_socket
-            ).start()
+        threading.Thread(target=self.read_from_tun).start()
+        threading.Thread(target=self.read_from_socket).start()

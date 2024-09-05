@@ -1,83 +1,131 @@
-from tun import TunPacketHandler
-from utils import print_colored, Color
-import socket
+import random
+from scapy.layers.inet import IP, UDP, TCP
+from scapy.layers.dns import EDNS0TLV, DNSRROPT, DNSQR, DNS
+from scapy.all import raw
 
-from scapy.all import IP, TCP
+import os
+import fcntl
+import struct
 
-import threading
+from utils import Color, print_colored
 
 
-class TunServer:
-    def __init__(self, name, port, key):
-        self.tun_handler = TunPacketHandler(name, "", port)
-        self.port = port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.key = key
-        self.mss = self.tun_handler.mss
-        self.tun_handler.sock = self.socket
+TUNSETIFF = 0x400454CA
+IFF_TUN = 0x0001
+IFF_NO_PI = 0x1000
 
-    # def read_from_tun(self, client_ip, client_port):
-    #     while True:
-    #         print("Reading from TUN")
-    #         packet = self.tun_handler.read()
-    #         self.send_packet(packet, client_ip, client_port)
 
-    # def read_from_socket(self, client_ip, client_port):
-    #     while True:
-    #         ends_packet, addr = self.socket.recvfrom(self.mss)
-    #         print_colored(f"Received packet from {addr}", Color.BLUE)
-    #         self.tun_handler.write(ends_packet)
+def open_tun_interface(tun_name):
+    tun = os.open("/dev/net/tun", os.O_RDWR)
+    ifr = struct.pack("16sH", tun_name.encode("utf-8"), IFF_TUN | IFF_NO_PI)
+    fcntl.ioctl(tun, TUNSETIFF, ifr)
+    return tun
 
-    # def send_packet(self, packet, client_ip, client_port):
-    #     if packet and len(packet) > 0:
-    #         print_colored(f"Packet: {packet}", Color.GREEN)
-    #         packet = self.tun_handler.process_packet(packet)
-            
-    #     print_colored(packet, Color.PURPLE)
 
-    #     if packet is not None:
-    #         self.socket.sendto(packet, (client_ip, client_port))
-    #         print_colored(f"Sent packet to {client_ip}:{client_port}", Color.GREEN)
-    #     else:
-    #         print_colored("Ignoring the packet", Color.YELLOW)
+EDNS_TLV_OPT_CODE = 65001
+TTL = 0x80000000
 
-    def start(self):
-        self.socket.bind(("0.0.0.0", self.port))
-        ip = socket.gethostbyname(socket.gethostname())
-        print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
-        self.tun_handler.server_ip = ip
 
-        while True:
-            data, addr = self.socket.recvfrom(1024)
-            if data.decode("utf-8") == self.key:
+class TunPacketHandler:
+    def __init__(self, name, mss=1500, mtu=1300):
+        self.name = name
+        self.tun = open_tun_interface(name)
+        self.mss = mss
+        self.mtu = mtu
+
+    def to_edns(self, payload):
+        "encapsulate payload in EDNS0"
+        payload_len = len(payload)
+
+        # Creating a DNS packet with EDNS0 option that carries a custom payload
+        # The EDNS0 option uses a TLV (Type-Length-Value) format
+        edns_tlv = EDNS0TLV(
+            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        )
+        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
+
+        # Constructing DNS query with EDNS0
+        dns_query = DNSQR(qname="example.com", qtype="ANY", qclass="IN")
+        dns_packet = DNS(
+            id=random.getrandbits(16),
+            rd=1,
+            qd=dns_query,
+            ar=edns_opt
+        )
+
+        return bytes(dns_packet)
+        # return payload
+
+    def from_edns(self, packet):
+        # "extract payload from EDNS0"
+        # # print("Packet: ", packet)
+        # dns = DNS(packet)
+        # # dns.show()
+        # for additional in dns.ar:
+        #     if isinstance(additional, DNSRROPT):
+        #         # print("Additional: ", additional)
+        #         for opt in additional.rdata:
+        #             # print("Opt: ", opt)
+        #             if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+        #                 payload = opt.optdata
+        #                 # print("Payload: ", payload)
+        #                 return payload
+        # return None
+        # return packet
+        dns_packet = DNS(packet)
+        payload = b""
+        for additional in dns_packet.ar:
+            if isinstance(additional, DNSRROPT):
+                for opt in additional.rdata:
+                    if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+                        payload = opt.optdata
+        return payload
+
+    def wrap_tcp_packet(self, ip):
+        if "S" in ip[TCP].flags:
+            self.modify_options_mss(ip)
+        return raw(ip)
+
+    def modify_options_mss(self, ip):
+        new_options = []
+        for option in ip[TCP].options:
+            if option[0] == "MSS":
+                mtu = min(option[1], self.mtu)
                 print_colored(
-                    f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
-                )
-                print_colored("Key exchange successful", Color.GREEN)
-                self.socket.sendto("OK".encode("utf-8"), addr)
-                client_ip = addr[0]
-                client_port = addr[1]
-                break
+                    f"Changing MSS from {option[1]} to {mtu}", Color.YELLOW)
+                new_options.append(("MSS", mtu))
             else:
-                print_colored(
-                    f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
-                )
-                print_colored("Key exchange failed", Color.RED)
-                self.socket.sendto("NO".encode("utf-8"), addr)
-                
-        threading.Thread(
-            # target=self.read_from_tun,
-            target=self.tun_handler.read_data_from_tun,
-            # args=(
-            #     client_ip,
-            #     client_port,
-            # ),
-        ).start()
-        threading.Thread(
-            # target=self.read_from_socket,
-            target=self.tun_handler.read_data_from_socket,
-            # args=(
-            #     client_ip,
-            #     client_port,
-            # ),
-        ).start()
+                new_options.append(option)
+        ip[TCP].options = new_options
+        # ip[TCP].show()
+        del ip.chksum
+        del ip[TCP].chksum
+        ip.chksum
+        ip[TCP].chksum
+
+    def read(self):
+        packet = os.read(self.tun, self.mss)
+        print_colored(f"Read {len(packet)} bytes from TUN", Color.YELLOW)
+        print_colored(f"Packet: {packet}", Color.ORANGE)
+        return packet
+
+    def write(self, packet):
+        packet = self.from_edns(packet)
+        print("Packet: ", packet)
+        if packet and len(packet) > 0:
+            print("Writing to TUN")
+            os.write(self.tun, packet)
+
+    def process_packet(self, packet):
+
+        ip = IP(packet)
+        # check if packet is TCP
+        ip.show()
+        print("IP Protocol: ", ip.proto)
+        if ip.proto == 6:
+            print("Processing TCP packet")
+            packet = self.wrap_tcp_packet(ip)
+            edns_packet = self.to_edns(packet)
+            print("EDNS Packet: ", edns_packet)
+            return edns_packet
+        return None
