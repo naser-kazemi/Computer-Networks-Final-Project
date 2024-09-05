@@ -10,7 +10,8 @@ def main():
     subnet = args.subnet
     port = args.port
 
-    server = TunServer(tun_name, subnet, port, SECRET)
+    # server = TunServer(tun_name, subnet, port, SECRET)
+    server = TunServer(tun_name, port, SECRET)
 
     server.start()
 

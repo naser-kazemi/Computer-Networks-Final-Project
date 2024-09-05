@@ -11,7 +11,8 @@ def main():
     server_ip = args.server_ip
     port = args.port
 
-    server = TunClient(tun_name, subnet, server_ip, port, SECRET)
+    # server = TunClient(tun_name, subnet, server_ip, port, SECRET)
+    server = TunClient(tun_name, server_ip, port, SECRET)
 
     server.start()
 
