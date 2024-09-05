@@ -104,4 +104,5 @@ class TunPacketHandler:
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
             return edns_packet
+        ip.show()
         return None
