@@ -43,7 +43,6 @@ class TunServer:
 
         while True:
             data, addr = self.socket.recvfrom(2048)
-            print(data)
             if data.decode("utf-8") == self.key:
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
@@ -52,23 +51,25 @@ class TunServer:
                 self.socket.sendto("OK".encode("utf-8"), addr)
                 client_ip = addr[0]
                 client_port = addr[1]
-                threading.Thread(
-                    target=self.read_from_tun,
-                    args=(
-                        client_ip,
-                        client_port,
-                    ),
-                ).start()
-                threading.Thread(
-                    target=self.read_from_socket,
-                    args=(
-                        client_ip,
-                        client_port,
-                    ),
-                ).start()
+                break
             else:
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
                 )
                 print_colored("Key exchange failed", Color.RED)
                 self.socket.sendto("NO".encode("utf-8"), addr)
+                
+        threading.Thread(
+            target=self.read_from_tun,
+            args=(
+                client_ip,
+                client_port,
+            ),
+        ).start()
+        threading.Thread(
+            target=self.read_from_socket,
+            args=(
+                client_ip,
+                client_port,
+            ),
+        ).start()
