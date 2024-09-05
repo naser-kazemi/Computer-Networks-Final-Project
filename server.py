@@ -9,7 +9,7 @@ import threading
 
 class TunServer:
     def __init__(self, name, port, key):
-        self.tun_handler = TunPacketHandler(name)
+        self.tun_handler = TunPacketHandler(name, "", port)
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.key = key
@@ -44,6 +44,7 @@ class TunServer:
         self.socket.bind(("0.0.0.0", self.port))
         ip = socket.gethostbyname(socket.gethostname())
         print_colored(f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
+        self.tun_handler.server_ip = ip
 
         while True:
             data, addr = self.socket.recvfrom(1024)

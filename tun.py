@@ -27,11 +27,14 @@ TTL = 0x80000000
 
 
 class TunPacketHandler:
-    def __init__(self, name, mss=1500, mtu=1300):
+    def __init__(self, name, server_host, server_port, mss=1500, mtu=1300):
         self.name = name
         self.tun = open_tun_interface(name)
         self.mss = mss
         self.mtu = mtu
+        self.sock = None
+        self.server_host = server_host
+        self.server_port = server_port
 
     def to_edns(self, payload):
         edns_opt = DNSRROPT(

@@ -9,7 +9,7 @@ import threading
 
 class TunClient:
     def __init__(self, name, server_ip, server_port, key):
-        self.tun_handler = TunPacketHandler(name)
+        self.tun_handler = TunPacketHandler(name, server_ip, server_port)
         self.server_ip = server_ip
         self.server_port = server_port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
