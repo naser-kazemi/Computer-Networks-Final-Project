@@ -1,3 +1,4 @@
+import random
 from scapy.layers.inet import IP, UDP, TCP
 from scapy.layers.dns import EDNS0TLV, DNSRROPT, DNSQR, DNS
 from scapy.all import raw
@@ -34,21 +35,26 @@ class TunPacketHandler:
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
-        # payload_len = len(payload)
+        payload_len = len(payload)
 
-        # # Creating a DNS packet with EDNS0 option that carries a custom payload
-        # # The EDNS0 option uses a TLV (Type-Length-Value) format
-        # edns_tlv = EDNS0TLV(
-        #     optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
-        # )
-        # edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
+        # Creating a DNS packet with EDNS0 option that carries a custom payload
+        # The EDNS0 option uses a TLV (Type-Length-Value) format
+        edns_tlv = EDNS0TLV(
+            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        )
+        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
 
-        # # Constructing DNS query with EDNS0
-        # dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
-        # dns_packet = DNS(qd=dns_query, ar=edns_opt)
+        # Constructing DNS query with EDNS0
+        dns_query = DNSQR(qname="example.com", qtype="ANY", qclass="IN")
+        dns_packet = DNS(
+            id=random.getrandbits(16),
+            rd=1,
+            qd=dns_query, 
+            ar=edns_opt
+            )
         
-        # return bytes(dns_packet)
-        return payload
+        return bytes(dns_packet)
+        # return payload
 
     def from_edns(self, packet):
         # "extract payload from EDNS0"
@@ -65,7 +71,15 @@ class TunPacketHandler:
         #                 # print("Payload: ", payload)
         #                 return payload
         # return None
-        return packet
+        # return packet
+        dns_packet = DNS(packet)
+        payload = b""
+        for additional in dns_packet.ar:
+            if isinstance(additional, DNSRROPT):
+                for opt in additional.rdata:
+                    if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+                        payload = opt.optdata
+        return payload
 
     def wrap_tcp_packet(self, ip):
         if "S" in ip[TCP].flags:
@@ -102,6 +116,7 @@ class TunPacketHandler:
             os.write(self.tun, packet)
 
     def process_packet(self, packet):
+            
         ip = IP(packet)
         # check if packet is TCP
         ip.show()
