@@ -23,7 +23,6 @@ class TunServer:
 
     def read_from_socket(self, client_ip, client_port):
         while True:
-            print(self.mss)
             ends_packet, addr = self.socket.recvfrom(self.mss)
             print_colored(f"Received packet from {addr}", Color.BLUE)
             self.tun_handler.write(ends_packet)
