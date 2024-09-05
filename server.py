@@ -27,6 +27,7 @@ class TunServer:
             self.tun_handler.write(ends_packet)
 
     def send_packet(self, packet, client_ip, client_port):
+        print_colored(f"Received packet from TUN", Color.PURPLE)
         if packet and len(packet) > 0:
             packet = self.tun_handler.process_packet(packet)
             
