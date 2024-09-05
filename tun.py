@@ -56,6 +56,7 @@ class TunPacketHandler:
             if isinstance(additional, DNSRROPT):
                 print("Additional: ", additional)
                 for opt in additional.rdata:
+                    print("Opt: ", opt)
                     if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
                         payload = opt.optdata
                     return payload
