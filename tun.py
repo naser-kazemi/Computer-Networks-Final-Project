@@ -32,36 +32,38 @@ class TunPacketHandler:
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
-        payload_len = len(payload)
+        # payload_len = len(payload)
 
-        # Creating a DNS packet with EDNS0 option that carries a custom payload
-        # The EDNS0 option uses a TLV (Type-Length-Value) format
-        edns_tlv = EDNS0TLV(
-            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
-        )
-        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
+        # # Creating a DNS packet with EDNS0 option that carries a custom payload
+        # # The EDNS0 option uses a TLV (Type-Length-Value) format
+        # edns_tlv = EDNS0TLV(
+        #     optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        # )
+        # edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
 
-        # Constructing DNS query with EDNS0
-        dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
-        dns_packet = DNS(qd=dns_query, ar=edns_opt)
+        # # Constructing DNS query with EDNS0
+        # dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
+        # dns_packet = DNS(qd=dns_query, ar=edns_opt)
         
-        return bytes(dns_packet)
+        # return bytes(dns_packet)
+        return payload
 
     def from_edns(self, packet):
-        "extract payload from EDNS0"
-        # print("Packet: ", packet)
-        dns = DNS(packet)
-        # dns.show()
-        for additional in dns.ar:
-            if isinstance(additional, DNSRROPT):
-                # print("Additional: ", additional)
-                for opt in additional.rdata:
-                    # print("Opt: ", opt)
-                    if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
-                        payload = opt.optdata
-                        # print("Payload: ", payload)
-                        return payload
-        return None
+        # "extract payload from EDNS0"
+        # # print("Packet: ", packet)
+        # dns = DNS(packet)
+        # # dns.show()
+        # for additional in dns.ar:
+        #     if isinstance(additional, DNSRROPT):
+        #         # print("Additional: ", additional)
+        #         for opt in additional.rdata:
+        #             # print("Opt: ", opt)
+        #             if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+        #                 payload = opt.optdata
+        #                 # print("Payload: ", payload)
+        #                 return payload
+        # return None
+        return packet
 
     def wrap_tcp_packet(self, ip):
         tcp = ip[TCP]
