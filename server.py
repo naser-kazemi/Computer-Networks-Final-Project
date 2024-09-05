@@ -8,8 +8,8 @@ import threading
 
 
 class TunServer:
-    def __init__(self, name, port, key):
-        self.tun_handler = TunPacketHandler(name)
+    def __init__(self, name, subnet, port, key):
+        self.tun_handler = TunPacketHandler(name, subnet)
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.key = key

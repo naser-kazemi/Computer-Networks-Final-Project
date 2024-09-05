@@ -31,7 +31,7 @@ sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
 
 echo "Masquerading all packets from $SUBNET to the internet"
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --tun-name $NIC --port 8080
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --tun-name $NIC --subnet $SUBNET --port 8080
 
 sudo ip tuntap del dev $NIC mode tun
 

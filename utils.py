@@ -26,9 +26,8 @@ def print_colored(text, color=Color.RESET):
 @dataclass
 class CLIArgs:
     tun_name: str = "tun0"
-
+    subnet: str = "172.16.0.0/24"
     server_ip: str = ""
-
     port: int = 8080
 
 
