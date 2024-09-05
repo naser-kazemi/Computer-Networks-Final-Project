@@ -19,7 +19,7 @@ class Color(Enum):
 # Example of using the enum to print colored text
 
 
-def print_colored(text, color=Color.WHITE):
+def print_colored(text, color=Color.RESET):
     print(f"{color.value}{text}{Color.RESET.value}")
 
 
