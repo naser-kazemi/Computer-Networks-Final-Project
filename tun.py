@@ -30,6 +30,7 @@ TTL = 0x80000000
 class TunPacketHandler:
     def __init__(self, name, server_host, server_port, mss=1500, mtu=1300):
         self.name = name
+        self.subnet = "172.16.0.2/24"
         self.tun = None
         self.create_tun_interface()
         self.mss = mss
