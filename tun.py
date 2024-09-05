@@ -29,6 +29,7 @@ class TunPacketHandler:
         self.tun = open_tun_interface(name)
         self.mss = mss
         self.mtu = mtu
+        sv = bytes("alda")
 
     def to_edns(self, payload):
         "encapsulate payload in EDNS0"
@@ -44,7 +45,7 @@ class TunPacketHandler:
         # Constructing DNS query with EDNS0
         dns_query = DNSQR(qname="example.com", qtype="A", qclass="IN")
         dns_packet = DNS(qd=dns_query, ar=edns_opt)
-
+        
         return bytes(dns_packet)
 
     def from_edns(self, packet):

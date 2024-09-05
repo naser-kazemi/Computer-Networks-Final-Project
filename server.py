@@ -24,6 +24,7 @@ class TunServer:
         while True:
             ends_packet, addr = self.socket.recvfrom(self.mss)
             print_colored(f"Received packet from {addr}", Color.BLUE)
+            print_colored(f"Packet: {ends_packet}", Color.BLUE)
             self.tun_handler.write(ends_packet)
 
     def send_packet(self, packet, client_ip, client_port):
