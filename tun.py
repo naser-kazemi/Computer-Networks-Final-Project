@@ -34,79 +34,68 @@ class TunPacketHandler:
         self.mtu = mtu
 
     def to_edns(self, payload):
-        "encapsulate payload in EDNS0"
-        payload_len = len(payload)
-
-        # Creating a DNS packet with EDNS0 option that carries a custom payload
-        # The EDNS0 option uses a TLV (Type-Length-Value) format
-        edns_tlv = EDNS0TLV(
-            optcode=EDNS_TLV_OPT_CODE, optlen=payload_len, optdata=payload
+        edns_opt = DNSRROPT(
+            rclass=4096,  # UDP payload size
+            # Length of the option data plus option header
+            rdlen=len(payload) + 4,
+            rdata=[EDNS0TLV(optcode=65001, optlen=len(
+                payload), optdata=payload)]
         )
-        edns_opt = DNSRROPT(rclass=4096, rdlen=payload_len + 4, rdata=edns_tlv)
-
-        # Constructing DNS query with EDNS0
-        dns_query = DNSQR(qname="example.com", qtype="ANY", qclass="IN")
         dns_packet = DNS(
             id=random.getrandbits(16),
             rd=1,
-            qd=dns_query, 
+            qd=DNSQR(qname="example.com", qtype="ANY", qclass="IN"),
             ar=edns_opt
-            )
-        
+        )
         return bytes(dns_packet)
-        # return payload
 
-    def from_edns(self, packet):
-        # "extract payload from EDNS0"
-        # # print("Packet: ", packet)
-        # dns = DNS(packet)
-        # # dns.show()
-        # for additional in dns.ar:
-        #     if isinstance(additional, DNSRROPT):
-        #         # print("Additional: ", additional)
-        #         for opt in additional.rdata:
-        #             # print("Opt: ", opt)
-        #             if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
-        #                 payload = opt.optdata
-        #                 # print("Payload: ", payload)
-        #                 return payload
-        # return None
-        # return packet
-        dns_packet = DNS(packet)
+    def from_edns(self, edns_packet):
+        dns_packet = DNS(edns_packet)
         payload = b""
         for additional in dns_packet.ar:
             if isinstance(additional, DNSRROPT):
                 for opt in additional.rdata:
-                    if isinstance(opt, EDNS0TLV) and opt.optcode == EDNS_TLV_OPT_CODE:
+                    if isinstance(opt, EDNS0TLV) and opt.optcode == 65001:
                         payload = opt.optdata
         return payload
 
-    def wrap_tcp_packet(self, ip):
-        if "S" in ip[TCP].flags:
-            self.modify_options_mss(ip)
+    def modify_tcp_packet(self, ip):
+        tcp = ip[TCP]
+        if 'S' in tcp.flags:
+            tcp.options = self.modify_mss_option(tcp.options)
+            self.recompute_checksums(ip, tcp)
         return raw(ip)
-
-    def modify_options_mss(self, ip):
-        new_options = []
-        for option in ip[TCP].options:
-            if option[0] == "MSS":
-                mtu = min(option[1], self.mtu)
-                print_colored(f"Changing MSS from {option[1]} to {mtu}", Color.YELLOW)
-                new_options.append(("MSS", mtu))
-            else:
-                new_options.append(option)
-        ip[TCP].options = new_options
-        # ip[TCP].show()
+    
+    def recompute_checksums(self, ip, tcp):
         del ip.chksum
-        del ip[TCP].chksum
+        del tcp.chksum
         ip.chksum
-        ip[TCP].chksum
+        tcp.chksum
 
-    def read(self):
-        packet = os.read(self.tun, self.mss)
-        print_colored(f"Read {len(packet)} bytes from TUN", Color.YELLOW)
-        print_colored(f"Packet: {packet}", Color.ORANGE)
-        return packet
+    def modify_mss_option(self, options):
+        new_options = []
+        for opt in options:
+            if opt[0] == 'MSS':
+                new_mss = min(self.mtu, opt[1])
+                new_options.append(('MSS', new_mss))  # Set MSS to 1300
+            else:
+                new_options.append(opt)
+        return new_options
+
+    def read_data_from_tun(self):
+        while True:
+            packet = os.read(self.tun, 1500)
+            if len(packet) > 0:
+                self.process_packet(packet)
+                
+    def read_data_from_socket(self):
+        while True:
+            data, addr = self.sock.recvfrom(1500)
+            edns_packet = data
+
+            ip_packet = self.from_edns(edns_packet)
+            if len(ip_packet) > 0:
+                os.write(self.tun, ip_packet)
 
     def write(self, packet):
         packet = self.from_edns(packet)
@@ -116,15 +105,12 @@ class TunPacketHandler:
             os.write(self.tun, packet)
 
     def process_packet(self, packet):
-            
         ip = IP(packet)
-        # check if packet is TCP
-        ip.show()
-        print("IP Protocol: ", ip.proto)
-        if ip.proto == 6:
-            print("Processing TCP packet")
-            packet = self.wrap_tcp_packet(ip)
+        if ip.proto == 6:  # TCP
+            packet = self.modify_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
-            print("EDNS Packet: ", edns_packet)
-            return edns_packet
-        return None
+            self.sock.sendto(
+                edns_packet, (self.server_host, int(self.server_port)))
+            print(f'Sent EDNS packet')
+        else:
+            print(f'Ignoring packet, protocol is {ip.proto}')
