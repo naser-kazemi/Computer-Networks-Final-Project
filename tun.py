@@ -82,6 +82,7 @@ class TunPacketHandler:
             else:
                 new_options.append(option)
         ip[TCP].options = new_options
+        ip[TCP].show()
         del ip.chksum
         del ip[TCP].chksum
         ip.chksum
@@ -100,12 +101,12 @@ class TunPacketHandler:
     def process_packet(self, packet):
         ip = IP(packet)
         # check if packet is TCP
-        ip.show()
+        # ip.show()
         print(ip.proto)
         if ip.proto == 6:
             print("Processing TCP packet")
             packet = self.wrap_tcp_packet(ip)
             edns_packet = self.to_edns(packet)
             return edns_packet
-        ip.show()
+        # ip.show()
         return None
