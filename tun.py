@@ -66,25 +66,23 @@ class TunPacketHandler:
         return packet
 
     def wrap_tcp_packet(self, ip):
-        tcp = ip[TCP]
-        if "S" in tcp.flags:
-            # SYN packet
+        if "S" in ip[TCP].flags:
             self.modify_options_mss(ip)
         return raw(ip)
 
     def modify_options_mss(self, ip):
-        options = ip[TCP].options
-        for i, option in enumerate(options):
+        new_options = []
+        for option in ip[TCP].options:
             if option[0] == "MSS":
                 mtu = min(option[1], self.mtu)
-                options[i] = (option[0], mtu)
-                break
-        ip[TCP].options = options
-        tcp = ip[TCP]
+                new_options.append(("MSS", mtu))
+            else:
+                new_options.append(option)
+        ip[TCP].options = new_options
         del ip.chksum
-        del tcp.chksum
+        del ip[TCP].chksum
         ip.chksum
-        tcp.chksum
+        ip[TCP].chksum
 
     def read(self):
         return os.read(self.tun, self.mss)
