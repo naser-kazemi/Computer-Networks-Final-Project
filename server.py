@@ -96,9 +96,16 @@ class TunServer(TunBase):
         while True:
             data, addr = self.sock.recvfrom(1500)
             ip, port = addr
+            try:
+                decoded_data = data.decode()
+                if decoded_data == 'ping':
+                    self.sock.sendto('pong'.encode(), addr)
+                    continue
+            except UnicodeDecodeError:
+                pass
             with self.lock:
                 try:
-                    if ip in self.clients and data.decode() != 'ping':
+                    if ip in self.clients:
                         self.clients[ip] = (port, time.time())  # Update port and last active time
                         ip_packet = TunPacketHandler.from_edns(data)
                         if ip_packet:
