@@ -112,7 +112,7 @@ class TunBase:
         if ip.proto == 6:  # TCP
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
             edns_packet = TunPacketHandler.to_edns(modified_packet)
-            # self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
+            self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
             print('Sent EDNS packet')
         else:
             print(f'Ignoring packet, protocol is {ip.proto}')
