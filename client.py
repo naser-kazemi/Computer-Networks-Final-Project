@@ -17,6 +17,7 @@ class TunClient(TunBase):
         self.connected = False
         self.reconnect_thread = None
         self.connection_check_thread = None
+        self.connection_check_counter = 3
 
     def start(self):
         print_colored(
@@ -55,14 +56,20 @@ class TunClient(TunBase):
                 data, addr = self.sock.recvfrom(1024)
                 if data.decode() == 'pong':
                     print_colored("Received pong from server", Color.GREEN)
+                    self.connection_check_counter = 3
                 else:
                     print_colored("Connection lost", Color.RED)
-                    self.connected = False
-                    self.run_state.is_running = False
+                    self.connection_check_counter -= 1
+                    if self.connection_check_counter <= 0:
+                        self.connected = False
+                        self.run_state.is_running = False
+                        self.connection_check_counter = 3
+                    # self.connected = False
+                    # self.run_state.is_running = False
             except socket.error:
                 print_colored("Connection lost", Color.RED)
-                self.connected = False
-                self.run_state.is_running = False
+                # self.connected = False
+                # self.run_state.is_running = False
             time.sleep(1)
 
     def connect_to_server(self):
