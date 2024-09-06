@@ -113,7 +113,10 @@ class TunBase:
 
     def read_from_socket(self):
         while self.run_state.is_running:
-            data, _ = self.sock.recvfrom(1500)
-            ip_packet = TunPacketHandler.from_edns(data)
-            if ip_packet:
-                self.tun_interface.write(ip_packet)
+            try:
+                data, _ = self.sock.recvfrom(1500)
+                ip_packet = TunPacketHandler.from_edns(data)
+                if ip_packet:
+                    self.tun_interface.write(ip_packet)
+            except Exception as e:
+                print_colored(f"Error reading from socket: {e}", Color.RED)
