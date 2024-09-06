@@ -8,22 +8,22 @@ from base import TunBase
 
 
 class TunClient(TunBase):
-    def __init__(self, tun_name, subnet, server, port, key):
-        super().__init__(tun_name, subnet, port, key)
-        self.server_host = server
+    def __init__(self, tun_name, server_ip, port, key):
+        super().__init__(tun_name, port, key)
+        self.server_ip = server_ip
         self.server_port = port
 
     def start(self):
-        if not self.server_host:
+        if not self.server_ip:
             print('Server IP is required in client mode')
             return
         
         self.tun_interface.open()
 
         self.server_port = int(self.server_port)
-        print(f'Sending to {self.server_host}:{self.server_port}')
+        print(f'Sending to {self.server_ip}:{self.server_port}')
         self.sock.sendto(self.key.encode(),
-                         (self.server_host, self.server_port))
+                         (self.server_ip, self.server_port))
         print('Performing Handshake')
         data, addr = self.sock.recvfrom(1024)
         print(f"Received {data.decode()} from {addr}")
