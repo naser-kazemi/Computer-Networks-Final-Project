@@ -3,6 +3,11 @@ from enum import Enum
 import tyro
 
 
+@dataclass
+class RunState:
+    is_running = False
+
+
 class Color(Enum):
     RED = "\033[31m"  # ANSI escape sequence for red
     GREEN = "\033[32m"  # ANSI escape sequence for green

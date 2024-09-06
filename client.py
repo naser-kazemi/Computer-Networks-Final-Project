@@ -2,6 +2,7 @@ from base import TunPacketHandler
 from utils import print_colored, Color
 import socket
 import time
+import threading
 
 from scapy.all import IP, TCP
 
@@ -14,6 +15,7 @@ class TunClient(TunBase):
         self.server_host = server
         self.server_port = port
         self.connected = False
+        self.reconnect_thread = None
 
     def start(self):
         print_colored(
@@ -23,13 +25,20 @@ class TunClient(TunBase):
         
         self.tun_interface.open()
 
-        while not self.connected:
-            self.connect_to_server()
-            if not self.connected:
-                print_colored("Retrying connection in 5 seconds...", Color.YELLOW)
-                time.sleep(5)
+        self.connect_to_server()
+        self.reconnect_thread = threading.Thread(target=self.reconnect_loop)
+        self.reconnect_thread.start()
+        
+        self.run_state.is_running = True
 
-        super().start()
+        super().start(self.run_state)
+
+    def reconnect_loop(self):
+        while True:
+            if not self.connected:
+                print_colored("Attempting to reconnect...", Color.YELLOW)
+                self.connect_to_server()
+            time.sleep(5)
 
     def connect_to_server(self):
         try:

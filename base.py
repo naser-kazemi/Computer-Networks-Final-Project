@@ -6,7 +6,7 @@ from scapy.all import raw
 import os
 import fcntl
 import struct
-from utils import Color, print_colored
+from utils import Color, print_colored, RunState
 
 TUNSETIFF = 0x400454CA
 IFF_TUN = 0x0001
@@ -76,7 +76,8 @@ class TunInterface:
     def write(self, data):
         print_colored("Writing to TUN interface", Color.PURPLE)
         os.write(self.tun, data)
-
+        
+        
 class TunBase:
     def __init__(self, tun_name, port, key):
         self.tun_interface = TunInterface(tun_name)
@@ -85,13 +86,14 @@ class TunBase:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_host = ""
         self.server_port = -1
+        self.run_state = RunState()
 
     def start(self):
         threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
 
     def read_from_tun(self):
-        while True:
+        while self.run_state.is_running:
             packet = self.tun_interface.read()
             if packet:
                 self.process_outgoing_packet(packet)
@@ -107,7 +109,7 @@ class TunBase:
             print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
     def read_from_socket(self):
-        while True:
+        while self.run_state.is_running:
             data, _ = self.sock.recvfrom(1500)
             ip_packet = TunPacketHandler.from_edns(data)
             if ip_packet:

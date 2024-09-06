@@ -22,6 +22,8 @@ class TunServer(TunBase):
         ip = socket.gethostbyname(socket.gethostname())
         print_colored(
             f"Starting the TUN server for {ip}:{self.port}", Color.YELLOW)
+        
+        self.run_state.is_running = True
 
         threading.Thread(target=self.accept_clients, daemon=True).start()
         threading.Thread(target=self.check_client_activity, daemon=True).start()
@@ -35,20 +37,23 @@ class TunServer(TunBase):
                 with self.lock:
                     self.clients[ip] = (port, time.time())
                 continue
-            if data.decode() == self.key:
-                with self.lock:
-                    self.clients[ip] = (port, time.time())
-                self.sock.sendto('OK'.encode(), addr)
-                print_colored(
-                    f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
-                )
-                print_colored("Key exchange successful", Color.GREEN)
-            else:
-                print_colored(
-                    f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
-                )
-                print_colored("Key exchange failed", Color.RED)
-                self.sock.sendto("NO".encode("utf-8"), addr)
+            try:
+                if data.decode() == self.key:
+                    with self.lock:
+                        self.clients[ip] = (port, time.time())
+                    self.sock.sendto('OK'.encode(), addr)
+                    print_colored(
+                        f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
+                    )
+                    print_colored("Key exchange successful", Color.GREEN)
+                else:
+                    print_colored(
+                        f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
+                    )
+                    print_colored("Key exchange failed", Color.RED)
+                    self.sock.sendto("NO".encode("utf-8"), addr)
+            except UnicodeDecodeError:
+                pass
 
     def check_client_activity(self):
         while True:
