@@ -10,14 +10,14 @@ from base import TunBase
 class TunClient(TunBase):
     def __init__(self, tun_name, subnet, server, port, key):
         super().__init__(tun_name, subnet, port, key)
-        self.server = server
+        self.server_host = server
+        self.server_port = port
 
     def start(self):
         if not self.server:
             print('Server IP is required in client mode')
             return
 
-        self.server_host, self.server_port = self.server.split(':')
         self.server_port = int(self.server_port)
         print(f'Sending to {self.server_host}:{self.server_port}')
         self.sock.sendto(self.key.encode(),
