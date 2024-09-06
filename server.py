@@ -32,6 +32,8 @@ class TunServer(TunBase):
             data, addr = self.sock.recvfrom(1024)
             ip, port = addr
             if data.decode() == self.key:
+                if ip in self.clients:
+                    continue
                 with self.lock:
                     self.clients[ip] = (port, time.time())
                 self.sock.sendto('OK'.encode(), addr)
@@ -57,7 +59,7 @@ class TunServer(TunBase):
                 
                 for ip in disconnected_clients:
                     del self.clients[ip]
-                    print_colored(f"Client {ip} disconnected due to inactivity", Color.YELLOW)
+                    print_colored(f"Client {ip} disconnected", Color.YELLOW)
             
             time.sleep(10)  # Check every 10 seconds
 
@@ -82,10 +84,13 @@ class TunServer(TunBase):
             data, addr = self.sock.recvfrom(1500)
             ip, port = addr
             with self.lock:
-                if ip in self.clients:
-                    self.clients[ip] = (port, time.time())  # Update port and last active time
-                    ip_packet = TunPacketHandler.from_edns(data)
-                    if ip_packet:
-                        self.tun_interface.write(ip_packet)
-                else:
-                    print_colored(f"Received packet from unknown client: {addr}", Color.RED)
+                try:
+                    if ip in self.clients:
+                        self.clients[ip] = (port, time.time())  # Update port and last active time
+                        ip_packet = TunPacketHandler.from_edns(data)
+                        if ip_packet:
+                            self.tun_interface.write(ip_packet)
+                    else:
+                        print_colored(f"Received packet from unknown client: {addr}", Color.RED)
+                except Exception as e:
+                    print_colored(f"Error processing packet from {addr}: {e}", Color.RED)
