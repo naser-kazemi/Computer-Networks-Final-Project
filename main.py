@@ -10,6 +10,7 @@ def main():
     mode = args.mode
 
     tun_name = args.tun_name
+    subnet = args.subnet
     server_ip = args.server_ip
     port = args.port
 
