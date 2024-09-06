@@ -6,7 +6,7 @@ source .venv/bin/activate
 PYTHON_EXECUTABLE=$(which python)
 
 # Path to your Python script that manages the TUN/TAP device
-SCRIPT_PATH="main_server.py"
+SCRIPT_PATH="main.py"
 
 NIC="tun0"
 SUBNET="172.16.0.2/24"
@@ -31,7 +31,7 @@ sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
 
 echo "Masquerading all packets from $SUBNET to the internet"
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --tun-name $NIC --subnet $SUBNET --port 8080
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode server --tun-name $NIC --subnet $SUBNET --port 8080
 
 sudo ip tuntap del dev $NIC mode tun
 

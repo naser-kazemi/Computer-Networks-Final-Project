@@ -6,7 +6,7 @@ source .venv/bin/activate
 PYTHON_EXECUTABLE=$(which python)
 
 # Path to your Python script that manages the TUN/TAP device
-SCRIPT_PATH="main_client.py"
+SCRIPT_PATH="main.py"
 
 NIC="tun0"
 SUBNET="172.16.0.2/24"
@@ -27,7 +27,7 @@ SUBNET="172.16.0.2/24"
 
 # sudo sysctl -w net.ipv4.ip_forward=1
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --tun-name $NIC --subnet $SUBNET  --server-ip 10.211.55.4 --port 8080 & pid=$!
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode client --tun-name $NIC --subnet $SUBNET  --server-ip 10.211.55.4 --port 8080 & pid=$!
 
 trap "kill $pid" INT TERM
 
