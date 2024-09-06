@@ -58,12 +58,12 @@ class TunClient(TunBase):
                     except UnicodeDecodeError:
                         pass
                 else:
-                    print_colored("Connection lost", Color.RED)
                     self.connection_check_counter -= 1
                     if self.connection_check_counter <= 0:
                         self.connected = False
                         self.run_state.is_running = False
                         self.connection_check_counter = 3
+                        print_colored("Connection lost", Color.RED)
             except socket.error as e:
                 print_colored(f"Error sending ping: {e}", Color.RED)
                 self.connected = False
