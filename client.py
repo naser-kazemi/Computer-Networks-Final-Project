@@ -8,34 +8,28 @@ from base import TunBase
 
 
 class TunClient(TunBase):
-    def __init__(self, tun_name, server_ip, server_port, secret):
-        super().__init__(tun_name, server_port, secret)
-        self.server_ip = server_ip
-        self.server_port = server_port
+    def __init__(self, tun_name, subnet, server, port, key):
+        super().__init__(tun_name, subnet, port, key)
+        self.server_host = server
+        self.server_port = port
 
     def start(self):
-
-        print_colored(
-            f"Starting the TUN client for {self.server_ip}:{self.server_port}",
-            Color.YELLOW,
-        )
-
+        if not self.server_host:
+            print('Server IP is required in client mode')
+            return
+        
         self.tun_interface.open()
 
-        self.sock.sendto(self.secret.encode(),
-                         (self.server_ip, self.server_port))
-
-        print_colored("Performed key exchange with the server", Color.YELLOW)
-
+        self.server_port = int(self.server_port)
+        print(f'Sending to {self.server_host}:{self.server_port}')
+        self.sock.sendto(self.key.encode(),
+                         (self.server_host, self.server_port))
+        print('Performing Handshake')
         data, addr = self.sock.recvfrom(1024)
-
-        print_colored(f"Received data from {addr}: {data.decode('utf-8')}")
-
-        if data.decode() == 'OK':
-            print_colored("Server accepted the key", Color.GREEN)
-            print_colored("Connection established", Color.GREEN)
-        else:
-            print_colored("Server rejected the key", Color.RED)
+        print(f"Received {data.decode()} from {addr}")
+        if data.decode() != 'OK':
+            print('Invalid Key')
             return
+        print('Connected to server')
 
         super().start()
