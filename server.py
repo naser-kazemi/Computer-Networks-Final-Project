@@ -12,8 +12,8 @@ from base import TunBase
 class TunServer(TunBase):
     def __init__(self, tun_name, port, key):
         super().__init__(tun_name, port, key)
-        self.clients = {}
-        self.client_last_active = {}
+        self.clients = {}  # {ip: (port, last_active)}
+        self.lock = threading.Lock()
 
     def start(self):
         self.tun_interface.open()
@@ -30,12 +30,10 @@ class TunServer(TunBase):
     def accept_clients(self):
         while True:
             data, addr = self.sock.recvfrom(1024)
-            client_ip, client_port = addr
+            ip, port = addr
             if data.decode() == self.key:
-                self.client_last_active[client_ip] = time.time()
-                if client_ip in self.clients:
-                    continue
-                self.clients[client_ip] = True
+                with self.lock:
+                    self.clients[ip] = (port, time.time())
                 self.sock.sendto('OK'.encode(), addr)
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
@@ -52,14 +50,14 @@ class TunServer(TunBase):
         while True:
             current_time = time.time()
             disconnected_clients = []
-            for client, last_active in self.client_last_active.items():
-                if current_time - last_active > 60:  # 60 seconds timeout
-                    disconnected_clients.append(client)
-            
-            for client in disconnected_clients:
-                del self.clients[client]
-                del self.client_last_active[client]
-                print_colored(f"Client {client} disconnected due to inactivity", Color.YELLOW)
+            with self.lock:
+                for ip, (port, last_active) in self.clients.items():
+                    if current_time - last_active > 60:  # 60 seconds timeout
+                        disconnected_clients.append(ip)
+                
+                for ip in disconnected_clients:
+                    del self.clients[ip]
+                    print_colored(f"Client {ip} disconnected due to inactivity", Color.YELLOW)
             
             time.sleep(10)  # Check every 10 seconds
 
@@ -68,13 +66,13 @@ class TunServer(TunBase):
         if ip.proto == 6:  # TCP
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
             edns_packet = TunPacketHandler.to_edns(modified_packet)
-            for client in list(self.clients.keys()):
-                try:
-                    self.sock.sendto(edns_packet, client)
-                except socket.error:
-                    print_colored(f"Failed to send packet to {client}, removing client", Color.RED)
-                    del self.clients[client]
-                    del self.client_last_active[client]
+            with self.lock:
+                for client_ip, (client_port, _) in list(self.clients.items()):
+                    try:
+                        self.sock.sendto(edns_packet, (client_ip, client_port))
+                    except socket.error:
+                        print_colored(f"Failed to send packet to {client_ip}:{client_port}, removing client", Color.RED)
+                        del self.clients[client_ip]
             print_colored(f"Sent EDNS packet to all clients", Color.BLUE)
         else:
             print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
@@ -82,11 +80,12 @@ class TunServer(TunBase):
     def read_from_socket(self):
         while True:
             data, addr = self.sock.recvfrom(1500)
-            client_ip, client_port = addr
-            if client_ip in self.clients:
-                self.client_last_active[client_ip] = time.time()
-                ip_packet = TunPacketHandler.from_edns(data)
-                if ip_packet:
-                    self.tun_interface.write(ip_packet)
-            else:
-                print_colored(f"Received packet from unknown client: {addr}", Color.RED)
+            ip, port = addr
+            with self.lock:
+                if ip in self.clients:
+                    self.clients[ip] = (port, time.time())  # Update port and last active time
+                    ip_packet = TunPacketHandler.from_edns(data)
+                    if ip_packet:
+                        self.tun_interface.write(ip_packet)
+                else:
+                    print_colored(f"Received packet from unknown client: {addr}", Color.RED)
