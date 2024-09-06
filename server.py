@@ -1,5 +1,5 @@
 from base import TunPacketHandler
-from utils import RunState, print_colored, Color
+from utils import print_colored, Color
 import socket
 import threading
 import time
@@ -13,7 +13,6 @@ class TunServer(TunBase):
     def __init__(self, tun_name, port, key):
         super().__init__(tun_name, port, key)
         self.clients = {}  # {ip: (port, last_active)}
-        self.client_read_tun_threads = {}
         self.lock = threading.Lock()
 
     def start(self):
@@ -28,7 +27,7 @@ class TunServer(TunBase):
 
         threading.Thread(target=self.accept_clients, daemon=True).start()
         threading.Thread(target=self.check_client_activity, daemon=True).start()
-        threading.Thread(target=self.read_from_socket).start()
+        super().start()
 
     def accept_clients(self):
         while True:
@@ -37,6 +36,12 @@ class TunServer(TunBase):
             if ip in self.clients:
                 with self.lock:
                     self.clients[ip] = (port, time.time())
+                    
+                try:
+                    if data.decode() == 'ping':
+                        self.sock.sendto('pong'.encode(), addr)
+                except UnicodeDecodeError:
+                    pass
                 continue
             try:
                 if data.decode() == self.key:
@@ -47,11 +52,6 @@ class TunServer(TunBase):
                         f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
                     )
                     print_colored("Key exchange successful", Color.GREEN)
-                    run_state = RunState()
-                    run_state.is_running = True
-                    read_thread = threading.Thread(target=self.read_from_tun, args=(run_state, ip, port))
-                    self.client_read_tun_threads[ip] = (read_thread, run_state)
-                    read_thread.start()
                 else:
                     print_colored(
                         f"Received key from {addr}: {data.decode('utf-8')}", Color.RED
@@ -72,18 +72,11 @@ class TunServer(TunBase):
                 
                 for ip in disconnected_clients:
                     del self.clients[ip]
-                    if ip in self.client_read_tun_threads:
-                        # stop the thread
-                        self.client_read_tun_threads[ip][1].is_running = False
-                        self.client_read_tun_threads[ip][0].join()
-                        del self.client_read_tun_threads[ip]
                     print_colored(f"Client {ip} disconnected", Color.YELLOW)
             
             time.sleep(5)
 
-    def process_outgoing_packet(self, packet, server_host, server_port):
-        server_host = server_host if server_host else self.server_host
-        server_port = server_port if server_port else self.server_port
+    def process_outgoing_packet(self, packet):
         ip = IP(packet)
         if ip.proto == 6:  # TCP
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
@@ -103,23 +96,9 @@ class TunServer(TunBase):
         while True:
             data, addr = self.sock.recvfrom(1500)
             ip, port = addr
-            if ip in self.clients:
-                is_ping = False
-                try:
-                    d = data.decode()
-                    is_ping = data.decode() == 'ping'
-                    print(f"Received ping from {addr}")
-                except UnicodeDecodeError:
-                    print(f"Received data from {addr}: {data}")
-                    pass
-                # print(f"received data: {d}")
-                if is_ping:
-                    self.sock.sendto('pong'.encode(), addr)
-                    # continue
-            print(f"received data: {d}")
             with self.lock:
                 try:
-                    if ip in self.clients:
+                    if ip in self.clients and data.decode() != 'ping':
                         self.clients[ip] = (port, time.time())  # Update port and last active time
                         ip_packet = TunPacketHandler.from_edns(data)
                         if ip_packet:

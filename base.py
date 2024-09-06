@@ -92,36 +92,25 @@ class TunBase:
         threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
 
-    def read_from_tun(self, run_state: RunState=None, server_host=None, server_port=None):
-        server_host = server_host if server_host else self.server_host
-        server_port = server_port if server_port else self.server_port
-        run_state = run_state if run_state else self.run_state
-        while run_state.is_running:
+    def read_from_tun(self):
+        while self.run_state.is_running:
             packet = self.tun_interface.read()
             if packet:
-                self.process_outgoing_packet(packet, server_host, server_port)
+                self.process_outgoing_packet(packet)
 
-    def process_outgoing_packet(self, packet, server_host, server_port):
+    def process_outgoing_packet(self, packet):
         ip = IP(packet)
-        if ip.dst != server_host or ip.dport != server_port:
-            return
-        try:
-            if ip.proto == 6:  # TCP
-                modified_packet = TunPacketHandler.modify_tcp_packet(ip)
-                edns_packet = TunPacketHandler.to_edns(modified_packet)
-                self.sock.sendto(edns_packet, (server_host, int(server_port)))
-                print_colored(f"Sent EDNS packet to {server_host}:{server_port}", Color.BLUE)
-            else:
-                print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
-        except Exception as e:
-            print_colored(f"Error processing packet: {e}", Color.RED)
+        if ip.proto == 6:  # TCP
+            modified_packet = TunPacketHandler.modify_tcp_packet(ip)
+            edns_packet = TunPacketHandler.to_edns(modified_packet)
+            self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
+            print_colored(f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
+        else:
+            print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
     def read_from_socket(self):
         while self.run_state.is_running:
-            try:
-                data, _ = self.sock.recvfrom(1500)
-                ip_packet = TunPacketHandler.from_edns(data)
-                if ip_packet:
-                    self.tun_interface.write(ip_packet)
-            except Exception as e:
-                print_colored(f"Error reading from socket: {e}", Color.RED)
+            data, _ = self.sock.recvfrom(1500)
+            ip_packet = TunPacketHandler.from_edns(data)
+            if ip_packet:
+                self.tun_interface.write(ip_packet)
