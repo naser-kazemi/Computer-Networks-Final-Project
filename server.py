@@ -31,9 +31,11 @@ class TunServer(TunBase):
         while True:
             data, addr = self.sock.recvfrom(1024)
             ip, port = addr
+            if ip in self.clients:
+                with self.lock:
+                    self.clients[ip] = (port, time.time())
+                continue
             if data.decode() == self.key:
-                if ip in self.clients:
-                    continue
                 with self.lock:
                     self.clients[ip] = (port, time.time())
                 self.sock.sendto('OK'.encode(), addr)
