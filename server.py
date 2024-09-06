@@ -30,11 +30,12 @@ class TunServer(TunBase):
     def accept_clients(self):
         while True:
             data, addr = self.sock.recvfrom(1024)
+            client_ip, client_port = addr
             if data.decode() == self.key:
-                self.client_last_active[addr] = time.time()
-                if addr in self.clients:
+                self.client_last_active[client_ip] = time.time()
+                if client_ip in self.clients:
                     continue
-                self.clients[addr] = True
+                self.clients[client_ip] = True
                 self.sock.sendto('OK'.encode(), addr)
                 print_colored(
                     f"Received key from {addr}: {data.decode('utf-8')}", Color.GREEN
@@ -81,8 +82,9 @@ class TunServer(TunBase):
     def read_from_socket(self):
         while True:
             data, addr = self.sock.recvfrom(1500)
-            if addr in self.clients:
-                self.client_last_active[addr] = time.time()
+            client_ip, client_port = addr
+            if client_ip in self.clients:
+                self.client_last_active[client_ip] = time.time()
                 ip_packet = TunPacketHandler.from_edns(data)
                 if ip_packet:
                     self.tun_interface.write(ip_packet)
