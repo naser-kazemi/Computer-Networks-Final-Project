@@ -81,7 +81,9 @@ class TunServer(TunBase):
             
             time.sleep(5)
 
-    def process_outgoing_packet(self, packet):
+    def process_outgoing_packet(self, packet, server_host, server_port):
+        server_host = server_host if server_host else self.server_host
+        server_port = server_port if server_port else self.server_port
         ip = IP(packet)
         if ip.proto == 6:  # TCP
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
