@@ -25,8 +25,8 @@ class TunServer(TunBase):
         
         self.run_state.is_running = True
 
-        threading.Thread(target=self.accept_clients, daemon=True).start()
-        threading.Thread(target=self.check_client_activity, daemon=True).start()
+        threading.Thread(target=self.accept_clients).start()
+        threading.Thread(target=self.check_client_activity).start()
         super().start()
 
     def accept_clients(self):
