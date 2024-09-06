@@ -42,8 +42,6 @@ class TunPacketHandler:
                 payload), optdata=payload)]
         )
         dns_packet = DNS(
-            id=random.getrandbits(16),
-            rd=1,
             qd=DNSQR(qname="example.com", qtype="ANY", qclass="IN"),
             ar=edns_opt
         )
@@ -75,8 +73,8 @@ class TunPacketHandler:
     def recompute_checksums(ip, tcp):
         del ip.chksum
         del tcp.chksum
-        ip.chksum
-        tcp.chksum
+        ip.chksum = ip.build_checksum()
+        tcp.chksum = tcp.build_checksum()
 
 
 class TunInterface:
