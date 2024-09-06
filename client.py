@@ -80,11 +80,12 @@ class TunClient(TunBase):
                 print_colored("Server accepted the key", Color.GREEN)
                 print_colored("Connection established", Color.GREEN)
                 self.connected = True
+                
+                self.run_state.is_running = True
+                
                 self.connection_check_thread = threading.Thread(
                     target=self.check_connection)
                 self.connection_check_thread.start()
-                
-                self.run_state.is_running = True
 
                 super().start()
             else:
