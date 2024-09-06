@@ -35,7 +35,7 @@ class TunClient(TunBase):
         
         self.run_state.is_running = True
 
-        super().start(self.run_state)
+        super().start()
 
     def reconnect_loop(self):
         while self.run_state.is_running:
