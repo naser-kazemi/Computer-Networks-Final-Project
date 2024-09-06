@@ -88,6 +88,10 @@ class TunBase:
         self.server_port = -1
         self.run_state = RunState()
 
+    def start(self):
+        threading.Thread(target=self.read_from_tun).start()
+        threading.Thread(target=self.read_from_socket).start()
+
     def read_from_tun(self):
         while self.run_state.is_running:
             packet = self.tun_interface.read()
