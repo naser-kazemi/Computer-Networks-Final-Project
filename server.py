@@ -28,8 +28,7 @@ class TunServer(TunBase):
         threading.Thread(target=self.accept_clients).start()
         threading.Thread(target=self.check_client_activity).start()
         
-        threading.Thread(target=self.read_from_tun).start()
-        threading.Thread(target=self.read_from_socket).start()
+        super().start()
 
     def accept_clients(self):
         while True:
