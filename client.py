@@ -45,6 +45,7 @@ class TunClient(TunBase):
             time.sleep(5)
 
     def check_connection(self):
+        print_colored("Starting connection check thread", Color.YELLOW)
         while self.run_state.is_running:
             print("Checking connection...")
             try:
