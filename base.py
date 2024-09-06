@@ -100,13 +100,16 @@ class TunBase:
 
     def process_outgoing_packet(self, packet):
         ip = IP(packet)
-        if ip.proto == 6:  # TCP
-            modified_packet = TunPacketHandler.modify_tcp_packet(ip)
-            edns_packet = TunPacketHandler.to_edns(modified_packet)
-            self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
-            print_colored(f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
-        else:
-            print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
+        try:
+            if ip.proto == 6:  # TCP
+                modified_packet = TunPacketHandler.modify_tcp_packet(ip)
+                edns_packet = TunPacketHandler.to_edns(modified_packet)
+                self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
+                print_colored(f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
+            else:
+                print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
+        except Exception as e:
+            print_colored(f"Error processing packet: {e}", Color.RED)
 
     def read_from_socket(self):
         while self.run_state.is_running:
