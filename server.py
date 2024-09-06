@@ -61,14 +61,14 @@ class TunServer(TunBase):
             disconnected_clients = []
             with self.lock:
                 for ip, (port, last_active) in self.clients.items():
-                    if current_time - last_active > 60:  # 60 seconds timeout
+                    if current_time - last_active > 20:  # 60 seconds timeout
                         disconnected_clients.append(ip)
                 
                 for ip in disconnected_clients:
                     del self.clients[ip]
                     print_colored(f"Client {ip} disconnected", Color.YELLOW)
             
-            time.sleep(10)  # Check every 10 seconds
+            time.sleep(5)
 
     def process_outgoing_packet(self, packet):
         ip = IP(packet)
