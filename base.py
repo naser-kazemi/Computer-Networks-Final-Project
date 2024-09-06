@@ -130,7 +130,7 @@ class TunBase:
             self.sock.sendto(
                 edns_packet, (self.server_host, int(self.server_port)))
             print_colored(
-                f"Sent EDNS packet to {self.server_ip}:{self.server_port}", Color.BLUE)
+                f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
         else:
             print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
