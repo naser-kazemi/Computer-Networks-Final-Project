@@ -35,3 +35,7 @@ sudo $PYTHON_EXECUTABLE main.py --mode client --subnet $SUBNET --port 8080 --ser
 # sudo ip route add $NEVERSSL_IP dev $NIC
 
 # wait "$pid"
+
+sudo ip tuntap del dev $NIC mode tun
+
+echo "Tun device $NIC deleted"

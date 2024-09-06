@@ -22,4 +22,6 @@ echo "NAT configuration is done"
 
 sudo $PYTHON_EXECUTABLE main.py --mode server --tun-name tun0 --subnet 172.16.0.1/24 --port 8080
 
-trap cleanup EXIT
+sudo ip tuntap del dev $NIC mode tun
+
+echo "Tun device $NIC deleted"
