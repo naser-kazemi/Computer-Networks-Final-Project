@@ -98,7 +98,7 @@ class TunServer(TunBase):
             ip, port = addr
             with self.lock:
                 try:
-                    if ip in self.clients:
+                    if ip in self.clients and data.decode() != 'ping':
                         self.clients[ip] = (port, time.time())  # Update port and last active time
                         ip_packet = TunPacketHandler.from_edns(data)
                         if ip_packet:
