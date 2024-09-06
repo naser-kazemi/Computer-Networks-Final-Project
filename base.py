@@ -16,20 +16,9 @@ from utils import Color, print_colored
 TUNSETIFF = 0x400454CA
 IFF_TUN = 0x0001
 IFF_NO_PI = 0x1000
-
-
-def open_tun_interface(tun_name):
-    tun = os.open("/dev/net/tun", os.O_RDWR)
-    ifr = struct.pack("16sH", tun_name.encode("utf-8"), IFF_TUN | IFF_NO_PI)
-    fcntl.ioctl(tun, TUNSETIFF, ifr)
-    return tun
-
-
 EDNS_TLV_OPT_CODE = 65001
 TTL = 0x80000000
-
-
-MTU = 1300
+MSS = 1300
 
 
 class TunPacketHandler:
@@ -69,7 +58,7 @@ class TunPacketHandler:
 
     @staticmethod
     def modify_mss_option(options):
-        return [('MSS', min(MTU, opt[1])) if opt[0] == 'MSS' else opt for opt in options]
+        return [('MSS', min(MSS, opt[1])) if opt[0] == 'MSS' else opt for opt in options]
 
     @staticmethod
     def recompute_checksums(ip, tcp):
@@ -103,16 +92,15 @@ class TunInterface:
 
 
 class TunBase:
-    def __init__(self, tun_name, subnet, port, key):
+    def __init__(self, tun_name, port, secret):
         self.tun_interface = TunInterface(tun_name)
         self.port = port
-        self.key = key
+        self.secret = secret
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_host = ""
+        self.server_ip = ""
         self.server_port = -1
 
     def start(self):
-        # self.tun_interface.open()
         threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
 
@@ -128,10 +116,11 @@ class TunBase:
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
             edns_packet = TunPacketHandler.to_edns(modified_packet)
             self.sock.sendto(
-                edns_packet, (self.server_host, int(self.server_port)))
-            print('Sent EDNS packet')
+                edns_packet, (self.server_ip, int(self.server_port)))
+            print_colored(
+                f"Sent EDNS packet to {self.server_ip}:{self.server_port}", Color.BLUE)
         else:
-            print(f'Ignoring packet, protocol is {ip.proto}')
+            print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
     def read_from_socket(self):
         while True:
