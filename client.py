@@ -97,4 +97,3 @@ class TunClient(TunBase):
         except Exception as e:
             print_colored(f"Error connecting to server: {str(e)}", Color.RED)
             self.connected = False
-
