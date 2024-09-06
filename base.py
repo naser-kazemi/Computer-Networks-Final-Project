@@ -89,12 +89,13 @@ class TunBase:
         self.run_state = RunState()
 
     def start(self):
-        threading.Thread(target=self.read_from_tun, args=(self.run_state,)).start()
+        threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
 
-    def read_from_tun(self, run_state: RunState, server_host=None, server_port=None):
+    def read_from_tun(self, run_state: RunState=None, server_host=None, server_port=None):
         server_host = server_host if server_host else self.server_host
         server_port = server_port if server_port else self.server_port
+        run_state = run_state if run_state else self.run_state
         while run_state.is_running:
             packet = self.tun_interface.read()
             if packet:
