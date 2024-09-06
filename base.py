@@ -129,9 +129,10 @@ class TunBase:
             edns_packet = TunPacketHandler.to_edns(modified_packet)
             self.sock.sendto(
                 edns_packet, (self.server_host, int(self.server_port)))
-            print('Sent EDNS packet')
+            print_colored(
+                f"Sent EDNS packet to {self.server_ip}:{self.server_port}", Color.BLUE)
         else:
-            print(f'Ignoring packet, protocol is {ip.proto}')
+            print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
     def read_from_socket(self):
         while True:
