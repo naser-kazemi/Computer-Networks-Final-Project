@@ -104,7 +104,7 @@ class TunInterface:
 
 class TunBase:
     def __init__(self, tun_name, subnet, port, key):
-        self.tun_interface = TunInterface(tun_name, subnet)
+        self.tun_interface = TunInterface(tun_name)
         self.port = port
         self.key = key
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
