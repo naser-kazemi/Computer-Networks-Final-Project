@@ -112,10 +112,11 @@ class TunServer(TunBase):
                 except UnicodeDecodeError:
                     print(f"Received data from {addr}: {data}")
                     pass
-                print(f"received data: {d}")
+                # print(f"received data: {d}")
                 if is_ping:
                     self.sock.sendto('pong'.encode(), addr)
                     continue
+            print(f"received data: {d}")
             with self.lock:
                 try:
                     if ip in self.clients:
