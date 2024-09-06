@@ -15,7 +15,7 @@ class TunClient(TunBase):
 
     def start(self):
         print_colored(
-            f"Starting the TUN client for {self.server_ip}:{self.server_port}",
+            f"Starting the TUN client for {self.server_host}:{self.server_port}",
             Color.YELLOW,
         )
         
