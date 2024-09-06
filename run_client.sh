@@ -3,24 +3,18 @@ source .venv/bin/activate
 # Path to your Python executable
 PYTHON_EXECUTABLE=$(which python)
 
-cleanup() {
-    echo "Terminating the background process..."
-    kill "$pid"
-    echo "Deleting TUN interface..."
-    sudo ip link delete tun0
-}
+NIC="tun0"
+SUBNET="172.16.0.2/24"
 
-NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
 
-echo "Resolved neverssl.com to IP: $NEVERSSL_IP"
-
-sudo $PYTHON_EXECUTABLE main.py --mode client --subnet 172.16.0.2/24 --port 8080 --server-ip 10.211.55.4 &
+sudo $PYTHON_EXECUTABLE main.py --mode client --subnet $SUBNET --port 8080 --server-ip 10.211.55.4 &
 pid=$!
 
-trap cleanup INT TERM
+trap "kill $pid" INT TERM
 
 sleep 5
 
-sudo ip route add "$NEVERSSL_IP" dev tun0
+NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
+sudo ip route add $NEVERSSL_IP dev $NIC
 
 wait "$pid"
