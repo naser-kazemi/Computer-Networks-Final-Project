@@ -1,40 +1,21 @@
-#!/bin/bash
-
 source .venv/bin/activate
 
 # Path to your Python executable
 PYTHON_EXECUTABLE=$(which python)
 
-# Path to your Python script that manages the TUN/TAP device
-SCRIPT_PATH="main.py"
+cleanup() {
+  echo "Cleaning up..."
+  sudo iptables -t nat -D POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
+  echo "iptables rule removed"
+  exit 0
+}
 
-NIC="tun0"
-SUBNET1="172.16.0.0/24"
-SUBNET2="172.16.0.1/24"
-
-
-# create the tun device
-# sudo ip tuntap add dev $NIC mode tun
-
-# sudo ip link set dev $NIC up
-
-# sudo ip addr flush dev $NIC
-# sudo ip addr add $SUBNET dev $NIC
-
-
-# echo "Tun device $NIC created with ip address $SUBNET"
-
-# get the ip address of the neverssl.com server using dig
-
-sleep 1
+trap cleanup INT TERM
 
 sudo sysctl -w net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -s $SUBNET1 ! -d $SUBNET1 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s 172.16.0.0/24 ! -d 172.16.0.0/24 -j MASQUERADE
+echo "NAT configuration is done"
 
-echo "Masquerading all packets from $SUBNET to the internet"
+sudo $PYTHON_EXECUTABLE main.py --mode server --subnet 172.16.0.1/24 --port 8080
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode server --tun-name $NIC --subnet $SUBNET2 --port 8080
-
-sudo ip tuntap del dev $NIC mode tun
-
-echo "Tun device $NIC deleted"
+trap cleanup EXIT

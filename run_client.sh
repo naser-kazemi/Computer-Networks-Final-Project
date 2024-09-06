@@ -1,44 +1,26 @@
-#!/bin/bash
-
 source .venv/bin/activate
 
 # Path to your Python executable
 PYTHON_EXECUTABLE=$(which python)
 
-# Path to your Python script that manages the TUN/TAP device
-SCRIPT_PATH="main.py"
+cleanup() {
+    echo "Terminating the background process..."
+    kill "$pid"
+    echo "Deleting TUN interface..."
+    sudo ip link delete tun0
+}
 
-NIC="tun0"
-SUBNET="172.16.0.1/24"
+NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
 
-# create the tun device
-# sudo ip tuntap add dev $NIC mode tun
+echo "Resolved neverssl.com to IP: $NEVERSSL_IP"
 
-# sudo ip link set dev $NIC up
+sudo $PYTHON_EXECUTABLE main.py --mode client --subnet 172.16.0.2/24 --port 8080 --server 10.211.55.4 &
+pid=$!
 
-# sudo ip addr flush dev $NIC
-# sudo ip addr add $SUBNET dev $NIC
+trap cleanup INT TERM
 
-# sleep 1
+sleep 5
 
-# echo "Tun device $NIC created with ip address $SUBNET"
-
-# sleep 1
-
-# sudo sysctl -w net.ipv4.ip_forward=1
-
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode client --tun-name $NIC --subnet $SUBNET  --server-ip 10.211.55.4 --port 8080 & pid=$!
-
-trap "kill $pid" INT TERM
-
-sleep 1
-
-# get the ip address of the neverssl.com server using dig
-IP_ADDRESS=$(dig +short neverssl.com)
-sudo ip route add $IP_ADDRESS dev $NIC
+sudo ip route add "$NEVERSSL_IP" dev tun0
 
 wait "$pid"
-
-sudo ip tuntap del dev $NIC mode tun
-
-echo "Tun device $NIC deleted"
