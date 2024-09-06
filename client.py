@@ -46,6 +46,7 @@ class TunClient(TunBase):
                 self.sock.sendto("ping".encode(), (self.server_host, self.server_port))
                 print_colored("Sent ping to server", Color.YELLOW)
                 time.sleep(2)
+            
                 for data in self.socket_cache:
                     try:
                         if data.decode() == 'pong':
@@ -63,6 +64,10 @@ class TunClient(TunBase):
                         self.connected = False
                         self.run_state.is_running = False
                         self.connection_check_counter = 3
+            except socket.error as e:
+                print_colored(f"Error sending ping: {e}", Color.RED)
+                self.connected = False
+                break
             
             time.sleep(1)
 
