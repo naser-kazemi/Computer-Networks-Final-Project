@@ -56,12 +56,8 @@ class TunClient(TunBase):
                         self.connected = False
                         self.run_state.is_running = False
                         self.connection_check_counter = 3
-                    # self.connected = False
-                    # self.run_state.is_running = False
-            except socket.error:
-                print_colored("Connection lost", Color.RED)
-                # self.connected = False
-                # self.run_state.is_running = False
+            except UnicodeDecodeError:
+                pass
             time.sleep(1)
 
     def connect_to_server(self):
