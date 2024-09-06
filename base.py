@@ -1,25 +1,36 @@
+import random
 import socket
+import subprocess
 import threading
 from scapy.layers.inet import IP, TCP
 from scapy.layers.dns import EDNS0TLV, DNSRROPT, DNSQR, DNS
 from scapy.all import raw
+
 import os
 import fcntl
 import struct
+
 from utils import Color, print_colored
+
 
 TUNSETIFF = 0x400454CA
 IFF_TUN = 0x0001
 IFF_NO_PI = 0x1000
-EDNS_TLV_OPT_CODE = 65001
-TTL = 0x80000000
-MTU = 1300
 
-def create_tun_interface(tun_name):
+
+def open_tun_interface(tun_name):
     tun = os.open("/dev/net/tun", os.O_RDWR)
     ifr = struct.pack("16sH", tun_name.encode("utf-8"), IFF_TUN | IFF_NO_PI)
     fcntl.ioctl(tun, TUNSETIFF, ifr)
     return tun
+
+
+EDNS_TLV_OPT_CODE = 65001
+TTL = 0x80000000
+
+
+MTU = 1300
+
 
 class TunPacketHandler:
     @staticmethod
@@ -27,7 +38,8 @@ class TunPacketHandler:
         edns_opt = DNSRROPT(
             rclass=4096,
             rdlen=len(payload) + 4,
-            rdata=[EDNS0TLV(optcode=EDNS_TLV_OPT_CODE, optlen=len(payload), optdata=payload)]
+            rdata=[EDNS0TLV(optcode=EDNS_TLV_OPT_CODE, optlen=len(
+                payload), optdata=payload)]
         )
         dns_packet = DNS(
             qd=DNSQR(qname="example.com", qtype="ANY", qclass="IN"),
@@ -49,12 +61,21 @@ class TunPacketHandler:
     def modify_tcp_packet(ip):
         tcp = ip[TCP]
         if 'S' in tcp.flags:
-            tcp.options = [('MSS', min(MTU, opt[1])) if opt[0] == 'MSS' else opt for opt in tcp.options]
-            del ip.chksum
-            del tcp.chksum
-            ip.chksum
-            tcp.chksum
+            tcp.options = TunPacketHandler.modify_mss_option(tcp.options)
+            TunPacketHandler.recompute_checksums(ip, tcp)
         return raw(ip)
+
+    @staticmethod
+    def modify_mss_option(options):
+        return [('MSS', min(MTU, opt[1])) if opt[0] == 'MSS' else opt for opt in options]
+
+    @staticmethod
+    def recompute_checksums(ip, tcp):
+        del ip.chksum
+        del tcp.chksum
+        ip.chksum = ip.build_checksum()
+        tcp.chksum = tcp.build_checksum()
+
 
 class TunInterface:
     def __init__(self, tun_name):
@@ -63,7 +84,10 @@ class TunInterface:
 
     def open(self):
         try:
-            self.tun = create_tun_interface(self.tun_name)
+            self.tun = os.open('/dev/net/tun', os.O_RDWR)
+            ifr = struct.pack('16sH', self.tun_name.encode(
+                'utf-8'), IFF_TUN | IFF_NO_PI)
+            fcntl.ioctl(self.tun, TUNSETIFF, ifr)
             print(f"TUN interface {self.tun_name} opened")
         except Exception as e:
             print(f"Error opening TUN interface: {e}")
@@ -77,6 +101,7 @@ class TunInterface:
         print_colored("Writing to TUN interface", Color.PURPLE)
         os.write(self.tun, data)
 
+
 class TunBase:
     def __init__(self, tun_name, port, key):
         self.tun_interface = TunInterface(tun_name)
@@ -87,8 +112,9 @@ class TunBase:
         self.server_port = -1
 
     def start(self):
-        threading.Thread(target=self.read_from_tun, daemon=True).start()
-        threading.Thread(target=self.read_from_socket, daemon=True).start()
+        # self.tun_interface.open()
+        threading.Thread(target=self.read_from_tun).start()
+        threading.Thread(target=self.read_from_socket).start()
 
     def read_from_tun(self):
         while True:
@@ -101,8 +127,10 @@ class TunBase:
         if ip.proto == 6:  # TCP
             modified_packet = TunPacketHandler.modify_tcp_packet(ip)
             edns_packet = TunPacketHandler.to_edns(modified_packet)
-            self.sock.sendto(edns_packet, (self.server_host, int(self.server_port)))
-            print_colored(f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
+            self.sock.sendto(
+                edns_packet, (self.server_host, int(self.server_port)))
+            print_colored(
+                f"Sent EDNS packet to {self.server_host}:{self.server_port}", Color.BLUE)
         else:
             print_colored(f"Protocol is {ip.proto}", Color.ORANGE)
 
