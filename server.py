@@ -12,6 +12,9 @@ class TunServer(TunBase):
         super().__init__(tun_name, subnet, port, key)
 
     def start(self):
+        
+        self.tun_interface.open()
+        
         self.sock.bind(('0.0.0.0', self.port))
         ip = socket.gethostbyname(socket.gethostname())
         print(f'Listening on {ip}:{self.port}')

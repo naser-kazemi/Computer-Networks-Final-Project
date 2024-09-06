@@ -85,19 +85,19 @@ class TunInterface:
         self.subnet = subnet
         self.tun = None
 
-    def create(self):
+    def open(self):
         try:
             self.tun = os.open('/dev/net/tun', os.O_RDWR)
             ifr = struct.pack('16sH', self.tun_name.encode(
                 'utf-8'), IFF_TUN | IFF_NO_PI)
             fcntl.ioctl(self.tun, TUNSETIFF, ifr)
-            print(f"TUN interface {self.tun_name} created")
-            subprocess.run(['sudo', 'ip', 'addr', 'add',
-                           self.subnet, 'dev', self.tun_name])
-            subprocess.run(['sudo', 'ip', 'link', 'set',
-                           'up', 'dev', self.tun_name])
+            print(f"TUN interface {self.tun_name} opened")
+            # subprocess.run(['sudo', 'ip', 'addr', 'add',
+            #                self.subnet, 'dev', self.tun_name])
+            # subprocess.run(['sudo', 'ip', 'link', 'set',
+            #                'up', 'dev', self.tun_name])
         except Exception as e:
-            print(f"Error creating TUN interface: {e}")
+            print(f"Error opening TUN interface: {e}")
             exit(1)
 
     def read(self):
@@ -117,7 +117,7 @@ class TunBase:
         self.server_port = -1
 
     def start(self):
-        self.tun_interface.create()
+        # self.tun_interface.open()
         threading.Thread(target=self.read_from_tun).start()
         threading.Thread(target=self.read_from_socket).start()
 
@@ -144,25 +144,3 @@ class TunBase:
             ip_packet = TunPacketHandler.from_edns(data)
             if ip_packet:
                 self.tun_interface.write(ip_packet)
-
-
-class TunServer(TunBase):
-    def __init__(self, tun_name, subnet, port, key):
-        super().__init__(tun_name, subnet, port, key)
-
-    def start(self):
-        self.sock.bind(('0.0.0.0', self.port))
-        ip = socket.gethostbyname(socket.gethostname())
-        print(f'Listening on {ip}:{self.port}')
-
-        while True:
-            data, addr = self.sock.recvfrom(1024)
-            if data.decode() == self.key:
-                self.server_host, self.server_port = addr
-                self.sock.sendto('OK'.encode(), addr)
-                print('Client handshake success')
-                break
-            else:
-                print('Invalid Key')
-
-        super().start()

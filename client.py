@@ -17,6 +17,8 @@ class TunClient(TunBase):
         if not self.server_host:
             print('Server IP is required in client mode')
             return
+        
+        self.tun_interface.open()
 
         self.server_port = int(self.server_port)
         print(f'Sending to {self.server_host}:{self.server_port}')
