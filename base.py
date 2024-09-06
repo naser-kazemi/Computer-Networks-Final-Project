@@ -80,10 +80,11 @@ class TunPacketHandler:
 
 
 class TunInterface:
-    def __init__(self, tun_name):
+    def __init__(self, tun_name, subnet):
         self.tun_name = tun_name
         self.tun = None
-
+        self.subnet = subnet
+        
     def open(self):
         try:
             self.tun = os.open('/dev/net/tun', os.O_RDWR)
@@ -104,7 +105,7 @@ class TunInterface:
 
 class TunBase:
     def __init__(self, tun_name, subnet, port, key):
-        self.tun_interface = TunInterface(tun_name)
+        self.tun_interface = TunInterface(tun_name, subnet)
         self.port = port
         self.key = key
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
