@@ -48,7 +48,15 @@ class TunClient(TunBase):
         while self.run_state.is_running:
             try:
                 # Send a small packet to check if the connection is still alive
-                self.sock.sendto(b'', (self.server_host, self.server_port))
+                self.sock.sendto("ping".encode(), (self.server_host, self.server_port))
+                print_colored("Sent ping to server", Color.YELLOW)
+                data, addr = self.sock.recvfrom(1024)
+                if data.decode() == 'pong':
+                    print_colored("Received pong from server", Color.GREEN)
+                else:
+                    print_colored("Connection lost", Color.RED)
+                    self.connected = False
+                    self.run_state.is_running = False
             except socket.error:
                 print_colored("Connection lost", Color.RED)
                 self.connected = False
