@@ -8,9 +8,9 @@ from base import TunBase
 
 
 class TunClient(TunBase):
-    def __init__(self, tun_name, server_ip, port, key):
-        super().__init__(tun_name, port, key)
-        self.server_ip = server_ip
+    def __init__(self, tun_name, subnet, server, port, key):
+        super().__init__(tun_name, subnet, port, key)
+        self.server_ip = server
         self.server_port = port
 
     def start(self):
