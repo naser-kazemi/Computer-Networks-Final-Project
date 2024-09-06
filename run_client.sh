@@ -25,16 +25,6 @@ sudo ip route add $NEVERSSL_IP dev $NIC
 sleep 1
 
 sudo $PYTHON_EXECUTABLE main.py --mode client --subnet $SUBNET --port 8080 --server-ip 10.211.55.4
-#  & pid=$!
-
-# trap "kill $pid" INT TERM
-
-# sleep 5
-
-# NEVERSSL_IP=$(dig +short neverssl.com | head -n 1)
-# sudo ip route add $NEVERSSL_IP dev $NIC
-
-# wait "$pid"
 
 sudo ip tuntap del dev $NIC mode tun
 

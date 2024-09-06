@@ -80,9 +80,8 @@ class TunPacketHandler:
 
 
 class TunInterface:
-    def __init__(self, tun_name, subnet):
+    def __init__(self, tun_name):
         self.tun_name = tun_name
-        self.subnet = subnet
         self.tun = None
 
     def open(self):
@@ -92,10 +91,6 @@ class TunInterface:
                 'utf-8'), IFF_TUN | IFF_NO_PI)
             fcntl.ioctl(self.tun, TUNSETIFF, ifr)
             print(f"TUN interface {self.tun_name} opened")
-            # subprocess.run(['sudo', 'ip', 'addr', 'add',
-            #                self.subnet, 'dev', self.tun_name])
-            # subprocess.run(['sudo', 'ip', 'link', 'set',
-            #                'up', 'dev', self.tun_name])
         except Exception as e:
             print(f"Error opening TUN interface: {e}")
             exit(1)
