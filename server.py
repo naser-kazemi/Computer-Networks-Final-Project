@@ -107,9 +107,9 @@ class TunServer(TunBase):
                 is_ping = False
                 try:
                     is_ping = data.decode() == 'ping'
-                    print(data.decode())
+                    print(f"Received ping from {addr}")
                 except UnicodeDecodeError:
-                    print(data)
+                    print(f"Received data from {addr}: {data}")
                     pass
                 if is_ping:
                     self.sock.sendto('pong'.encode(), addr)
