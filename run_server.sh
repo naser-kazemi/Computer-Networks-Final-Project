@@ -9,7 +9,9 @@ PYTHON_EXECUTABLE=$(which python)
 SCRIPT_PATH="main.py"
 
 NIC="tun0"
-SUBNET="172.16.0.2/24"
+SUBNET1="172.16.0.0/24"
+SUBNET2="172.16.0.1/24"
+
 
 # create the tun device
 # sudo ip tuntap add dev $NIC mode tun
@@ -27,11 +29,11 @@ SUBNET="172.16.0.2/24"
 sleep 1
 
 sudo sysctl -w net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -s $SUBNET ! -d $SUBNET -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s $SUBNET1 ! -d $SUBNET1 -j MASQUERADE
 
 echo "Masquerading all packets from $SUBNET to the internet"
 
-sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode server --tun-name $NIC --subnet $SUBNET --port 8080
+sudo $PYTHON_EXECUTABLE $SCRIPT_PATH --mode server --tun-name $NIC --subnet $SUBNET2 --port 8080
 
 sudo ip tuntap del dev $NIC mode tun
 
