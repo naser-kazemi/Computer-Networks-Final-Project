@@ -30,13 +30,6 @@ class TunClient(TunBase):
         self.connect_to_server()
         self.reconnect_thread = threading.Thread(target=self.reconnect_loop)
         self.reconnect_thread.start()
-        
-        self.connection_check_thread = threading.Thread(target=self.check_connection)
-        self.connection_check_thread.start()
-        
-        self.run_state.is_running = True
-
-        super().start()
 
     def reconnect_loop(self):
         while self.run_state.is_running:
@@ -46,7 +39,6 @@ class TunClient(TunBase):
             time.sleep(5)
 
     def check_connection(self):
-        print_colored("Starting connection check thread", Color.YELLOW)
         while self.run_state.is_running:
             print("Checking connection...")
             try:
@@ -88,6 +80,13 @@ class TunClient(TunBase):
                 print_colored("Server accepted the key", Color.GREEN)
                 print_colored("Connection established", Color.GREEN)
                 self.connected = True
+                self.connection_check_thread = threading.Thread(
+                    target=self.check_connection)
+                self.connection_check_thread.start()
+                
+                self.run_state.is_running = True
+
+                super().start()
             else:
                 print_colored("Server rejected the key", Color.RED)
                 self.connected = False
