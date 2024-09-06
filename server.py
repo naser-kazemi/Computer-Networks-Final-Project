@@ -115,7 +115,7 @@ class TunServer(TunBase):
                 # print(f"received data: {d}")
                 if is_ping:
                     self.sock.sendto('pong'.encode(), addr)
-                    continue
+                    # continue
             print(f"received data: {d}")
             with self.lock:
                 try:
