@@ -14,22 +14,25 @@ class TunClient(TunBase):
         self.server_port = port
 
     def start(self):
-        if not self.server_host:
-            print('Server IP is required in client mode')
-            return
+        print_colored(
+            f"Starting the TUN client for {self.server_ip}:{self.server_port}",
+            Color.YELLOW,
+        )
         
         self.tun_interface.open()
 
-        self.server_port = int(self.server_port)
-        print(f'Sending to {self.server_host}:{self.server_port}')
         self.sock.sendto(self.key.encode(),
                          (self.server_host, self.server_port))
-        print('Performing Handshake')
+        print_colored("Performed key exchange with the server", Color.YELLOW)
+        
         data, addr = self.sock.recvfrom(1024)
-        print(f"Received {data.decode()} from {addr}")
-        if data.decode() != 'OK':
-            print('Invalid Key')
+        print_colored(f"Received data from {addr}: {data.decode('utf-8')}", Color.YELLOW)
+        
+        if data.decode() == 'OK':
+            print_colored("Server accepted the key", Color.GREEN)
+            print_colored("Connection established", Color.GREEN)
+        else:
+            print_colored("Server rejected the key", Color.RED)
             return
-        print('Connected to server')
 
         super().start()
