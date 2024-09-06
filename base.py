@@ -87,6 +87,7 @@ class TunBase:
         self.server_host = ""
         self.server_port = -1
         self.run_state = RunState()
+        self.socket_cache = []
 
     def start(self):
         threading.Thread(target=self.read_from_tun).start()
@@ -111,6 +112,7 @@ class TunBase:
     def read_from_socket(self):
         while self.run_state.is_running:
             data, _ = self.sock.recvfrom(1500)
+            self.socket_cache.append(data)
             try:
                 ip_packet = TunPacketHandler.from_edns(data)
                 if ip_packet:

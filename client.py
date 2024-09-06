@@ -30,30 +30,6 @@ class TunClient(TunBase):
         self.connect_to_server()
         self.reconnect_thread = threading.Thread(target=self.reconnect_loop)
         self.reconnect_thread.start()
-        
-    def read_from_socket(self):
-        while self.run_state.is_running:
-            data, _ = self.sock.recvfrom(1500)
-            try:
-                if data.decode() == 'pong':
-                    print_colored("Received pong from server", Color.GREEN)
-                    self.connection_check_counter = 3
-                else:
-                    print_colored("Connection lost", Color.RED)
-                    self.connection_check_counter -= 1
-                    if self.connection_check_counter <= 0:
-                        self.connected = False
-                        self.run_state.is_running = False
-                        self.connection_check_counter = 3
-            except UnicodeDecodeError:
-                pass
-            try:
-                ip_packet = TunPacketHandler.from_edns(data)
-                self.connection_check_counter =  min(self.connection_check_counter + 1, 3)
-                if ip_packet:
-                    self.tun_interface.write(ip_packet)
-            except TypeError:
-                pass
 
     def reconnect_loop(self):
         while self.run_state.is_running:
@@ -69,8 +45,25 @@ class TunClient(TunBase):
                 # Send a small packet to check if the connection is still alive
                 self.sock.sendto("ping".encode(), (self.server_host, self.server_port))
                 print_colored("Sent ping to server", Color.YELLOW)
-            except UnicodeDecodeError:
-                pass
+                time.sleep(2)
+                for data in self.socket_cache:
+                    try:
+                        if data.decode() == 'pong':
+                            print_colored("Received pong from server", Color.GREEN)
+                            self.connection_check_counter = 3
+                            # clear the socket cache
+                            self.socket_cache = []
+                            break
+                    except UnicodeDecodeError:
+                        pass
+                else:
+                    print_colored("Connection lost", Color.RED)
+                    self.connection_check_counter -= 1
+                    if self.connection_check_counter <= 0:
+                        self.connected = False
+                        self.run_state.is_running = False
+                        self.connection_check_counter = 3
+            
             time.sleep(1)
 
     def connect_to_server(self):
