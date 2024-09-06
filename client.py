@@ -46,6 +46,7 @@ class TunClient(TunBase):
 
     def check_connection(self):
         while self.run_state.is_running:
+            print("Checking connection...")
             try:
                 # Send a small packet to check if the connection is still alive
                 self.sock.sendto("ping".encode(), (self.server_host, self.server_port))
