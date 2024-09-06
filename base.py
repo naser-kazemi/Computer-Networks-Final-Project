@@ -96,9 +96,11 @@ class TunInterface:
             exit(1)
 
     def read(self):
+        print_colored("Reading from TUN interface", Color.PURPLE)
         return os.read(self.tun, 1500)
 
     def write(self, data):
+        print_colored("Writing to TUN interface", Color.PURPLE)
         os.write(self.tun, data)
 
 
