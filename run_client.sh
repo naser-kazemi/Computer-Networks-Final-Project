@@ -24,7 +24,7 @@ sudo ip route add $NEVERSSL_IP dev $NIC
 
 sleep 1
 
-sudo $PYTHON_EXECUTABLE main.py --mode client --subnet $SUBNET --port 8080 --server-ip 10.211.55.4
+sudo $PYTHON_EXECUTABLE main.py --mode client --port 8080 --server-ip 10.211.55.4
 
 sudo ip tuntap del dev $NIC mode tun
 
